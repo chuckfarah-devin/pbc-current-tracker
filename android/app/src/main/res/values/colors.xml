@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Snorkel index badge colors -->
+    <color name="score_excellent">#2E7D32</color>
+    <color name="score_good">#558B2F</color>
+    <color name="score_fair">#F9A825</color>
+    <color name="score_marginal">#E65100</color>
+    <color name="score_poor">#B71C1C</color>
+    <color name="badge_unknown">#78909C</color>
+    <!-- Current arrow -->
+    <color name="current_arrow">#1565C0</color>
+    <!-- Drag handle -->
+    <color name="handle_color">#BDBDBD</color>
+    <!-- Material seed -->
+    <color name="md_theme_primary">#0077B6</color>
+    <color name="md_theme_secondary">#00B4D8</color>
+</resources>

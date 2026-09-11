@@ -1,0 +1,28 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // Mapbox SDK Maven registry -- needs SDK_REGISTRY_TOKEN
+        // in ~/.gradle/gradle.properties (see android/README.md)
+        maven {
+            url "https://api.mapbox.com/downloads/v2/releases/maven"
+            authentication { basic(BasicAuthentication) }
+            credentials {
+                username = "mapbox"
+                password = project.hasProperty("SDK_REGISTRY_TOKEN") ?
+                    project.property("SDK_REGISTRY_TOKEN") :
+                    System.getenv("SDK_REGISTRY_TOKEN") ?: ""
+            }
+        }
+    }
+}
+rootProject.name = "PBCPlumeTracker"
+include ":app"

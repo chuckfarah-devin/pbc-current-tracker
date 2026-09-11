@@ -1,0 +1,68 @@
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "kotlin-kapt"
+}
+
+android {
+    namespace "com.pbcplume.tracker"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.pbcplume.tracker"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0-mvp"
+
+        // Read Mapbox public token from local.properties (git-ignored)
+        def props = new Properties()
+        def localProps = rootProject.file("local.properties")
+        if (localProps.exists()) props.load(localProps.newInputStream())
+        buildConfigField "String", "MAPBOX_ACCESS_TOKEN",
+            "\"${props.getProperty("MAPBOX_ACCESS_TOKEN", "pk.INSERT_TOKEN_HERE")}\""
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = "17" }
+}
+
+dependencies {
+    // Kotlin
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0"
+
+    // AndroidX
+    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.3"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.7.7"
+    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
+    implementation "androidx.work:work-runtime-ktx:2.9.0"
+
+    // Material
+    implementation "com.google.android.material:material:1.12.0"
+
+    // Networking
+    implementation "com.squareup.retrofit2:retrofit:2.11.0"
+    implementation "com.squareup.retrofit2:converter-moshi:2.11.0"
+    implementation "com.squareup.okhttp3:okhttp:4.12.0"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.12.0"
+    implementation "com.squareup.moshi:moshi:1.15.1"
+    implementation "com.squareup.moshi:moshi-kotlin:1.15.1"
+    kapt "com.squareup.moshi:moshi-kotlin-codegen:1.15.1"
+
+    // Mapbox Maps SDK v11
+    implementation "com.mapbox.maps:android:11.3.0"
+
+    // Logging
+    implementation "com.jakewharton.timber:timber:5.0.1"
+}

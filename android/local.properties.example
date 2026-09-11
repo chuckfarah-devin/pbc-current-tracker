@@ -1,0 +1,10 @@
+# Copy to local.properties (git-ignored) and fill in real values.
+# Mapbox public access token (pk.eyJ1...)
+# Get one at: https://account.mapbox.com/access-tokens/
+MAPBOX_ACCESS_TOKEN=pk.your_token_here
+
+# Mapbox SDK secret token (sk.eyJ1...) -- also needed in ~/.gradle/gradle.properties
+# SDK_REGISTRY_TOKEN=sk.your_secret_here
+
+# Android SDK path (usually auto-detected by Android Studio)
+# sdk.dir=/Users/you/Library/Android/sdk

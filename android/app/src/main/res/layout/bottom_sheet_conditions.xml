@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Drag handle -->
+        <View android:layout_width="40dp" android:layout_height="4dp"
+            android:layout_gravity="center_horizontal" android:layout_marginBottom="16dp"
+            android:background="@color/handle_color" />
+
+        <!-- Snorkel Index -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/section_snorkel" android:textAppearance="?attr/textAppearanceTitleSmall" />
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginTop="4dp">
+                    <TextView android:id="@+id/tvSnorkelScore" android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="1"
+                        android:textAppearance="?attr/textAppearanceHeadlineMedium" android:text="--" />
+                    <TextView android:id="@+id/tvSnorkelLabel" android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="2"
+                        android:gravity="center_vertical" android:textAppearance="?attr/textAppearanceBodyLarge" />
+                </LinearLayout>
+                <TextView android:id="@+id/tvSnorkelReasons" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                    android:textAppearance="?attr/textAppearanceBodySmall" />
+                <TextView android:id="@+id/tvNearshoreQuality" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                    android:textAppearance="?attr/textAppearanceLabelSmall" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Current -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/section_current" android:textAppearance="?attr/textAppearanceTitleSmall" />
+                <TextView android:id="@+id/tvCurrentSpeed" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+                <TextView android:id="@+id/tvCurrentDir" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                <TextView android:id="@+id/tvCurrentSource" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvCurrentRes" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvCurrentError" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textColor="?attr/colorError"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Clarity -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/section_clarity" android:textAppearance="?attr/textAppearanceTitleSmall" />
+                <TextView android:id="@+id/tvClarityScore" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+                <TextView android:id="@+id/tvClarityNtu" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                <TextView android:id="@+id/tvClaritySource" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvClarityRes" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvClarityError" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textColor="?attr/colorError"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Runoff -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/section_runoff" android:textAppearance="?attr/textAppearanceTitleSmall" />
+                <TextView android:id="@+id/tvC16Flow" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+                <TextView android:id="@+id/tvRain24h" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                <TextView android:id="@+id/tvRunoffIntensity" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvRunoffError" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:textColor="?attr/colorError"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Lake O -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <Text
