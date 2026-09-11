@@ -17,9 +17,9 @@ dependencyResolutionManagement {
             authentication { basic(BasicAuthentication) }
             credentials {
                 username = "mapbox"
-                password = project.hasProperty("SDK_REGISTRY_TOKEN") ?
-                    project.property("SDK_REGISTRY_TOKEN") :
-                    System.getenv("SDK_REGISTRY_TOKEN") ?: ""
+                password = providers.gradleProperty("SDK_REGISTRY_TOKEN")
+                    .orElse(providers.environmentVariable("SDK_REGISTRY_TOKEN"))
+                    .getOrElse("")
             }
         }
     }
