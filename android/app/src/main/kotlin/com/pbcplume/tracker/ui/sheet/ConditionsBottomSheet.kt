@@ -101,8 +101,7 @@ class ConditionsBottomSheet : BottomSheetDialogFragment() {
         binding.tvSnorkelScore.text  = "${d.snorkelIndex.score}/100"
         binding.tvSnorkelLabel.text  = d.snorkelIndex.label
         binding.tvSnorkelReasons.text = if (d.snorkelIndex.reasons.isEmpty()) na
-            else d.snorkelIndex.reasons.joinToString("
-") { "• $it" }
+            else d.snorkelIndex.reasons.joinToString("\n") { "• $it" }
 
         // ── Nearshore quality ─────────────────────────────────────────────────
         binding.tvNearshoreQuality.text =
