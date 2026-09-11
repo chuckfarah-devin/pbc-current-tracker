@@ -3,7 +3,6 @@ package com.pbcplume.tracker
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupActionBarWithNavController
 import com.pbcplume.tracker.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -15,15 +14,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val navHost = supportFragmentManager
+        // Theme is NoActionBar — nav graph only needs the host; system back
+        // button handles Settings/Debug return navigation.
+        supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHost.navController
-        setupActionBarWithNavController(navController)
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        val navHost = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        return navHost.navController.navigateUp() || super.onSupportNavigateUp()
     }
 }
