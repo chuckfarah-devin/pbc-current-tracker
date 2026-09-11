@@ -1,7 +1,7 @@
 package com.pbcplume.tracker
 
 import android.app.Application
-import com.mapbox.maps.MapboxOptions
+import com.mapbox.common.MapboxOptions
 import timber.log.Timber
 
 class PlumeApplication : Application() {

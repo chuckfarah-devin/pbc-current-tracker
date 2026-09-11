@@ -1,10 +1,8 @@
 package com.pbcplume.tracker.data.model
 
 import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
 
 /** Root response from GET /api/conditions (matches backend v0.2) */
-@JsonClass(generateAdapter = true)
 data class ConditionsResponse(
     val location: LocationInfo,
     val current: CurrentData,
@@ -17,13 +15,11 @@ data class ConditionsResponse(
     val sargassum: SargassumData? = null   // Phase 4 — always null in v1
 )
 
-@JsonClass(generateAdapter = true)
 data class LocationInfo(
     val lat: Double,
     val lon: Double
 )
 
-@JsonClass(generateAdapter = true)
 data class CurrentData(
     @Json(name = "speed_mps") val speedMps: Double?,
     @Json(name = "direction_deg") val directionDeg: Double?,
@@ -33,7 +29,6 @@ data class CurrentData(
     val error: String?
 )
 
-@JsonClass(generateAdapter = true)
 data class TurbidityData(
     val ntu: Double?,
     @Json(name = "clarity_score") val clarityScore: Int?,
@@ -44,7 +39,6 @@ data class TurbidityData(
     val error: String?
 )
 
-@JsonClass(generateAdapter = true)
 data class RunoffData(
     @Json(name = "recent_rain_mm") val recentRainMm: Double?,
     @Json(name = "c16_flow_cfs") val c16FlowCfs: Double?,
@@ -53,7 +47,6 @@ data class RunoffData(
     val error: String?
 )
 
-@JsonClass(generateAdapter = true)
 data class LakeOData(
     @Json(name = "lake_stage_ft") val lakeStageFt: Double?,
     @Json(name = "east_discharge_cfs_total") val eastDischargeCfsTotal: Double?,
@@ -62,7 +55,6 @@ data class LakeOData(
     val error: String?
 )
 
-@JsonClass(generateAdapter = true)
 data class PlumeData(
     @Json(name = "direction_deg") val directionDeg: Double?,
     @Json(name = "speed_mps") val speedMps: Double?,
@@ -71,7 +63,6 @@ data class PlumeData(
     val resolution: String?   // macro / meso / micro
 )
 
-@JsonClass(generateAdapter = true)
 data class SnorkelIndex(
     val score: Int,
     val label: String,
@@ -79,7 +70,6 @@ data class SnorkelIndex(
 )
 
 // Phase 4 stub — null until Backend Phase 4 ships
-@JsonClass(generateAdapter = true)
 data class SargassumData(
     @Json(name = "density_class") val densityClass: Int?,
     val presence: Boolean?,
@@ -90,14 +80,12 @@ data class SargassumData(
 )
 
 /** Response from GET /api/status */
-@JsonClass(generateAdapter = true)
 data class StatusResponse(
     val status: String,
     @Json(name = "last_update") val lastUpdate: String,
     val sources: Map<String, SourceStatus>
 )
 
-@JsonClass(generateAdapter = true)
 data class SourceStatus(
     @Json(name = "last_update") val lastUpdate: String?,
     val status: String,
