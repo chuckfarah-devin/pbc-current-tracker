@@ -17,7 +17,6 @@
             android:layout_gravity="center_horizontal" android:layout_marginBottom="16dp"
             android:background="@color/handle_color" />
 
-        <!-- Snorkel Index -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
@@ -29,7 +28,7 @@
                     android:orientation="horizontal" android:layout_marginTop="4dp">
                     <TextView android:id="@+id/tvSnorkelScore" android:layout_width="0dp"
                         android:layout_height="wrap_content" android:layout_weight="1"
-                        android:textAppearance="?attr/textAppearanceHeadlineMedium" android:text="--" />
+                        android:text="--" android:textAppearance="?attr/textAppearanceHeadlineMedium" />
                     <TextView android:id="@+id/tvSnorkelLabel" android:layout_width="0dp"
                         android:layout_height="wrap_content" android:layout_weight="2"
                         android:gravity="center_vertical" android:textAppearance="?attr/textAppearanceBodyLarge" />
@@ -43,7 +42,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Current -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
@@ -51,21 +49,14 @@
                 android:orientation="vertical" android:padding="12dp">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="@string/section_current" android:textAppearance="?attr/textAppearanceTitleSmall" />
-                <TextView android:id="@+id/tvCurrentSpeed" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:layout_marginTop="4dp" />
-                <TextView android:id="@+id/tvCurrentDir" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <TextView android:id="@+id/tvCurrentSource" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
-                <TextView android:id="@+id/tvCurrentRes" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
-                <TextView android:id="@+id/tvCurrentError" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:textColor="?attr/colorError"
-                    android:visibility="gone" />
+                <TextView android:id="@+id/tvCurrentSpeed" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+                <TextView android:id="@+id/tvCurrentDir" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <TextView android:id="@+id/tvCurrentSource" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvCurrentRes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvCurrentError" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorError" android:visibility="gone" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Clarity -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
@@ -73,21 +64,14 @@
                 android:orientation="vertical" android:padding="12dp">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="@string/section_clarity" android:textAppearance="?attr/textAppearanceTitleSmall" />
-                <TextView android:id="@+id/tvClarityScore" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:layout_marginTop="4dp" />
-                <TextView android:id="@+id/tvClarityNtu" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <TextView android:id="@+id/tvClaritySource" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
-                <TextView android:id="@+id/tvClarityRes" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
-                <TextView android:id="@+id/tvClarityError" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:textColor="?attr/colorError"
-                    android:visibility="gone" />
+                <TextView android:id="@+id/tvClarityScore" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+                <TextView android:id="@+id/tvClarityNtu" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <TextView android:id="@+id/tvClaritySource" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvClarityRes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvClarityError" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorError" android:visibility="gone" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Runoff -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
@@ -95,22 +79,38 @@
                 android:orientation="vertical" android:padding="12dp">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="@string/section_runoff" android:textAppearance="?attr/textAppearanceTitleSmall" />
-                <TextView android:id="@+id/tvC16Flow" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:layout_marginTop="4dp" />
-                <TextView android:id="@+id/tvRain24h" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <TextView android:id="@+id/tvRunoffIntensity" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
-                <TextView android:id="@+id/tvRunoffError" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:textColor="?attr/colorError"
-                    android:visibility="gone" />
+                <TextView android:id="@+id/tvC16Flow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+                <TextView android:id="@+id/tvRain24h" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <TextView android:id="@+id/tvRunoffIntensity" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+                <TextView android:id="@+id/tvRunoffError" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorError" android:visibility="gone" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Lake O -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:padding="12dp">
-                <Text
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/section_lake_o" android:textAppearance="?attr/textAppearanceTitleSmall" />
+                <TextView android:id="@+id/tvLakeStage" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+                <TextView android:id="@+id/tvLakeDischarge" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <TextView android:id="@+id/tvLakeError" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorError" android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" app:cardCornerRadius="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="@string/section_plume" android:textAppearance="?attr/textAppearanceTitleSmall" />
+                <TextView android:id="@+id/tvPlumeSource" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+                <TextView android:id="@+id/tvPlumeConf" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <TextView android:id="@+id/tvPlumeResolution" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelSmall" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</ScrollView>
