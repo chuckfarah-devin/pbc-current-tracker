@@ -142,7 +142,7 @@
             android:minHeight="40dp"
             android:text="@string/open_camera"
             android:textColor="?attr/colorPrimary"
-            app:icon="@drawable/ic_link_arrow"
+            app:icon="@drawable/ic_open_camera"
             app:iconGravity="end" />
 
         <TextView

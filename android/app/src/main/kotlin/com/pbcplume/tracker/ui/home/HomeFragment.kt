@@ -102,11 +102,11 @@ class HomeFragment : Fragment() {
         }
         binding.tvHeroHeadline.text = when {
             framingOk && appearance?.headline != null -> appearance.headline
-            health != null -> "Camera view for visual review · framing not verified"
+            health != null -> getString(R.string.camera_visual_review)
             else -> getString(R.string.na)
         }
-        binding.tvHeroCamera.text = appearance?.let { "${it.location} · ${it.cameraId}" }
-            ?: health?.let { "${it.location} · ${it.view ?: it.cameraId}" }
+        binding.tvHeroCamera.text = appearance?.location
+            ?: health?.location
             ?: getString(R.string.na)
 
         val observed = SnorkelFormat.time(health?.observedAt ?: appearance?.observedAt)
@@ -172,9 +172,16 @@ class HomeFragment : Fragment() {
                 if (periodAge != null) append(" · $periodAge")
                 append(" · nominal ${a.nominalResolutionM}m composite")
             }
+            val chartVisible = !a.sourceImageUrl.isNullOrBlank()
+            val sourceVisible = !a.sourceUrl.isNullOrBlank()
+            val legendVisible = !a.sourceLegendUrl.isNullOrBlank()
             setLinkButton(binding.btnViewUsfChart, a.sourceImageUrl)
             setLinkButton(binding.btnViewUsfSource, a.sourceUrl)
             setLinkButton(binding.btnViewUsfLegend, a.sourceLegendUrl)
+            binding.tvUsfDot1.visibility =
+                if (chartVisible && (sourceVisible || legendVisible)) View.VISIBLE else View.GONE
+            binding.tvUsfDot2.visibility =
+                if (sourceVisible && legendVisible) View.VISIBLE else View.GONE
         } ?: run {
             binding.tvAlgaeStatus.text = getString(R.string.na)
             binding.tvAlgaePeriod.text = getString(R.string.na)
@@ -185,7 +192,8 @@ class HomeFragment : Fragment() {
 
         // Surface flow (experimental)
         data.surfaceMotion?.let { m ->
-            val direction = m.userLabel?.removePrefix("Surface flow: ")?.trim() ?: getString(R.string.na)
+            val rawDirection = m.userLabel?.removePrefix("Surface flow: ")?.trim() ?: getString(R.string.na)
+            val direction = rawDirection.replaceFirstChar { it.uppercase() }
             binding.tvSurfaceFlowStatus.text = direction
             binding.tvSurfaceFlowSupport.text = if (data.mode == "recorded_replay") {
                 "Recorded reference · not live."
@@ -194,6 +202,12 @@ class HomeFragment : Fragment() {
             }
             binding.tvSurfaceFlowSupport.visibility =
                 if (binding.tvSurfaceFlowSupport.text.isBlank()) View.GONE else View.VISIBLE
+            binding.ivSurfaceFlowArrow.setImageResource(when {
+                rawDirection.contains("northward") -> R.drawable.ic_direction_n
+                rawDirection.contains("southward") -> R.drawable.ic_direction_s
+                else -> R.drawable.ic_direction_none
+            })
+            binding.ivSurfaceFlowArrow.visibility = View.VISIBLE
             val flowObserved = SnorkelFormat.time(m.observedAt)
             val flowAnalyzed = SnorkelFormat.time(m.fetchedAt)
             binding.tvSurfaceFlowTime.text = buildString {
@@ -206,16 +220,16 @@ class HomeFragment : Fragment() {
             }
             val url = m.clipUrl?.takeIf { it.isNotBlank() } ?: m.regionsImageUrl
             if (url != null) {
-                binding.btnSurfaceFlowEvidence.visibility = View.VISIBLE
-                binding.btnSurfaceFlowEvidence.setOnClickListener { openSurfaceFlowEvidence(url) }
+                binding.cardSurfaceFlow.setOnClickListener { openSurfaceFlowEvidence(url) }
             } else {
-                binding.btnSurfaceFlowEvidence.visibility = View.GONE
+                binding.cardSurfaceFlow.setOnClickListener(null)
             }
         } ?: run {
             binding.tvSurfaceFlowStatus.text = getString(R.string.na)
             binding.tvSurfaceFlowSupport.visibility = View.GONE
             binding.tvSurfaceFlowTime.text = "Capture time unknown"
-            binding.btnSurfaceFlowEvidence.visibility = View.GONE
+            binding.ivSurfaceFlowArrow.visibility = View.GONE
+            binding.cardSurfaceFlow.setOnClickListener(null)
         }
 
         // C-16

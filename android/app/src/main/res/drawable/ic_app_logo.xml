@@ -7,5 +7,5 @@
     android:tint="@color/snorkel_icon">
     <path
         android:fillColor="#FF000000"
-        android:pathData="M3,12c2,0 2.5,2.5 4.5,2.5S10,12 12,12s2.5,2.5 4.5,2.5S19,12 21,12" />
+        android:pathData="M4,13c2,0 2,2.5 4,2.5s2,-2.5 4,-2.5 2,2.5 4,2.5 2,-2.5 4,-2.5" />
 </vector>

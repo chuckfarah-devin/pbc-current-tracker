@@ -41,9 +41,9 @@
     <string name="offshore_algae">Offshore sargassum</string>
     <string name="surface_flow">Surface flow</string>
     <string name="surface_flow_experimental">Experimental</string>
-    <string name="view_usf_chart">Chart</string>
-    <string name="usf_source">Source</string>
-    <string name="usf_legend">Legend</string>
+    <string name="view_usf_chart">Chart ↗</string>
+    <string name="usf_source">Source ↗</string>
+    <string name="usf_legend">Legend ↗</string>
     <string name="c16_info">C-16 runoff information</string>
     <string name="open_sfwmd">Open SFWMD information</string>
     <string name="recorded_replay">Recorded demo · sources have different dates</string>
@@ -56,4 +56,6 @@
     <string name="status_experimental">Experimental</string>
     <string name="open_link">Open link</string>
     <string name="analyzed_at">analyzed</string>
+    <string name="view_surface_flow_evidence">View surface-flow evidence</string>
+    <string name="camera_visual_review">Camera view for visual review</string>
 </resources>

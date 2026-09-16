@@ -40,10 +40,8 @@ object SnorkelFormat {
     }
 
     fun cameraTime(observed: String?, age: Double?, provider: String?, retrieved: String?): String {
-        val ageText = ageLabel(age)?.let { " · $it" } ?: ""
         return when {
-            observed != null -> "Observed $observed$ageText"
-            provider != null -> "Capture shown: $provider · capture time unverified"
+            retrieved != null && observed != null -> "Retrieved $retrieved · captured $observed"
             retrieved != null -> "Retrieved $retrieved · capture time unverified"
             else -> "Capture time unknown"
         }

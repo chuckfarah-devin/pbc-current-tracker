@@ -154,6 +154,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="@string/view_surface_flow_evidence"
+            android:foreground="?attr/selectableItemBackground"
             app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
@@ -164,7 +168,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:paddingEnd="48dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -200,13 +205,27 @@
                         android:textColor="@color/snorkel_experimental" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvSurfaceFlowStatus"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:textAppearance="?attr/textAppearanceHeadlineSmall"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/ivSurfaceFlowArrow"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:id="@+id/tvSurfaceFlowStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                        android:textColor="?attr/colorOnSurface" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvSurfaceFlowSupport"
@@ -224,20 +243,17 @@
                     android:textAppearance="?attr/textAppearanceBodySmall"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSurfaceFlowEvidence"
-                    style="?attr/borderlessButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:minHeight="40dp"
-                    android:text="@string/see_evidence"
-                    android:textColor="?attr/colorPrimary"
-                    app:icon="@drawable/ic_link_arrow"
-                    app:iconGravity="end"
-                    app:iconTint="?attr/colorPrimary"
-                    android:visibility="gone" />
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/ivSurfaceFlowChevron"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_chevron_right"
+                android:contentDescription="@null"
+                app:tint="@color/snorkel_secondary_text" />
         </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout
@@ -405,46 +421,70 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <com.google.android.material.button.MaterialButton
+                    <TextView
                         android:id="@+id/btnViewUsfChart"
-                        style="?attr/borderlessButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:minHeight="40dp"
+                        android:paddingVertical="8dp"
                         android:text="@string/view_usf_chart"
-                        android:textColor="?attr/colorPrimary"
-                        app:icon="@drawable/ic_link_arrow"
-                        app:iconGravity="end"
-                        app:iconTint="?attr/colorPrimary"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@color/snorkel_icon"
                         android:visibility="gone" />
 
-                    <com.google.android.material.button.MaterialButton
+                    <TextView
+                        android:id="@+id/tvUsfDot1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="8dp"
+                        android:text="·"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@color/snorkel_secondary_text"
+                        android:visibility="gone" />
+
+                    <TextView
                         android:id="@+id/btnViewUsfSource"
-                        style="?attr/borderlessButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:minHeight="40dp"
+                        android:paddingVertical="8dp"
                         android:text="@string/usf_source"
-                        android:textColor="?attr/colorPrimary"
-                        app:icon="@drawable/ic_link_arrow"
-                        app:iconGravity="end"
-                        app:iconTint="?attr/colorPrimary"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@color/snorkel_icon"
                         android:visibility="gone" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnViewUsfLegend"
-                        style="?attr/borderlessButtonStyle"
+                    <TextView
+                        android:id="@+id/tvUsfDot2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="8dp"
+                        android:text="·"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@color/snorkel_secondary_text"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/btnViewUsfLegend"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:minHeight="40dp"
+                        android:paddingVertical="8dp"
                         android:text="@string/usf_legend"
-                        android:textColor="?attr/colorPrimary"
-                        app:icon="@drawable/ic_link_arrow"
-                        app:iconGravity="end"
-                        app:iconTint="?attr/colorPrimary"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@color/snorkel_icon"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
