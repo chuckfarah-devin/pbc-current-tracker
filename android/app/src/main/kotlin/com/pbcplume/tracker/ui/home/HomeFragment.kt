@@ -101,7 +101,7 @@ class HomeFragment : Fragment() {
             binding.ivCameraHero.setImageResource(R.drawable.ic_launcher_background)
         }
         binding.tvHeroHeadline.text = when {
-            framingOk && appearance?.headline != null -> appearance.headline
+            framingOk && !appearance?.headline.isNullOrBlank() -> getString(R.string.hero_appearance)
             health != null -> getString(R.string.camera_visual_review)
             else -> getString(R.string.na)
         }
@@ -192,7 +192,7 @@ class HomeFragment : Fragment() {
 
         // Surface flow (experimental)
         data.surfaceMotion?.let { m ->
-            val rawDirection = m.userLabel?.removePrefix("Surface flow: ")?.trim() ?: getString(R.string.na)
+            val rawDirection = m.userLabel?.removePrefix("Surface flow: ")?.trim()?.substringBefore(" · ") ?: getString(R.string.na)
             val direction = rawDirection.replaceFirstChar { it.uppercase() }
             binding.tvSurfaceFlowStatus.text = direction
             binding.tvSurfaceFlowSupport.text = if (data.mode == "recorded_replay") {
