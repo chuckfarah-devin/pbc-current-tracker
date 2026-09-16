@@ -18,6 +18,7 @@ import com.pbcplume.tracker.data.model.SnorkelConditionsResponse
 import com.pbcplume.tracker.databinding.BottomSheetEvidenceBinding
 import com.pbcplume.tracker.ui.SnorkelUiState
 import com.pbcplume.tracker.ui.SnorkelViewModel
+import com.pbcplume.tracker.util.SnorkelFormat
 import kotlinx.coroutines.launch
 
 class EvidenceBottomSheet : BottomSheetDialogFragment() {
@@ -76,11 +77,17 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
         binding.tvEvidenceCamera.text = appearance?.let { "${it.location} · ${it.cameraId}" }
             ?: health?.let { "${it.location} · ${it.view ?: it.cameraId}" }
             ?: getString(R.string.na)
-        binding.tvEvidenceObserved.text = getString(R.string.observed_at) + ": " +
-                (appearance?.observedAtLocal ?: health?.observedAtLocal ?: getString(R.string.na))
-        binding.tvEvidenceFetched.text = getString(R.string.fetched_at) + ": " +
-                (health?.fetchedAt ?: appearance?.fetchedAt ?: getString(R.string.na))
-        binding.tvEvidenceStatus.text = health?.status ?: appearance?.status ?: getString(R.string.na)
+
+        val observed = SnorkelFormat.time(appearance?.observedAt ?: health?.observedAt)
+        val retrieved = SnorkelFormat.time(appearance?.fetchedAt ?: health?.fetchedAt)
+        binding.tvEvidenceObserved.text = when {
+            observed != null -> "Observed $observed · Retrieved $retrieved"
+            retrieved != null -> "Retrieved $retrieved · capture time unverified"
+            else -> getString(R.string.na)
+        }
+        binding.tvEvidenceFetched.visibility = View.GONE
+
+        binding.tvEvidenceStatus.text = SnorkelFormat.statusLabel(health?.status ?: appearance?.status)
 
         val sourceUrl = health?.pageUrl ?: appearance?.sourceUrl
         binding.btnSourceLink.setOnClickListener {
@@ -112,15 +119,21 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
         data.weather?.let { w ->
             val speed = w.wind.speedMph ?: w.wind.speedKn?.times(1.150779448)
             val from = w.wind.fromCompass ?: getString(R.string.na)
+            val toward = w.wind.towardCompass ?: ""
             val gust = w.wind.gustMph ?: w.wind.gustKn?.times(1.150779448)
             binding.tvEvidenceWind.text = (
-                "Wind: %.1f mph from %s; gusts %.1f mph\n".format(speed, from, gust) +
-                "Rain previous 24h: %.1f mm; next 24h: %.1f mm".format(
-                    w.recent24h.mm, w.forward24h.mm
-                )
+                "%.1f mph from $from${if (toward.isNotBlank()) " → $toward" else ""}\n".format(speed) +
+                "Gusts %.1f mph".format(gust)
+            )
+            val recent = w.recent24h.mm
+            val forward = w.forward24h.mm
+            binding.tvEvidenceRain.text = (
+                "Previous 24h: %.1f mm\n".format(recent) +
+                "Next 24h: %.1f mm".format(forward)
             )
         } ?: run {
             binding.tvEvidenceWind.text = getString(R.string.na)
+            binding.tvEvidenceRain.text = getString(R.string.na)
         }
 
         data.algae?.let { a ->

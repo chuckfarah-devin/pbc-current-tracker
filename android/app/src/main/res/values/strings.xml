@@ -34,7 +34,8 @@
     <string name="offshore_algae">Offshore floating algae</string>
     <string name="c16_info">C-16 runoff information</string>
     <string name="open_sfwmd">Open SFWMD information</string>
-    <string name="recorded_replay">Recorded replay</string>
+    <string name="recorded_replay">Recorded demo · sources have different dates</string>
+    <string name="refresh_sources">Refresh sources</string>
     <string name="developer_only">Developer-only</string>
     <string name="nearby_cameras">Nearby camera context</string>
     <string name="source_link">Source link</string>

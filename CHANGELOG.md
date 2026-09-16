@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] UI polish from first-run feedback
+
+### Changed
+- Replace the toolbar’s up-arrow refresh icon with a proper `ic_refresh` and `Refresh sources` accessibility label.
+- Replace clipped-oval replay banner with a rounded amber banner that reads `Recorded demo · sources have different dates`.
+- Format capture/retrieval times to `America/New_York` local time, e.g. `Retrieved Sep 14, 1:10 PM EDT · capture time unverified`.
+- Map raw backend statuses to plain-language labels (`Stream active, capture time unverified`, `Earlier view`, etc.).
+- Make the evidence sheet a scrollable `NestedScrollView` with a clearer drag handle and padding.
+- Show wind and rain as separate, populated sections in the evidence sheet.
+- Preserve camera image aspect ratio with `centerInside` so sample-region labels remain readable.
+
 ## [Milestone 1] Snorkel Conditions — recorded replay parity
 
 ### Added

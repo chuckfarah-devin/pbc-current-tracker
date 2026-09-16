@@ -15,10 +15,10 @@ import androidx.navigation.fragment.findNavController
 import coil.load
 import com.pbcplume.tracker.R
 import com.pbcplume.tracker.data.model.SnorkelConditionsResponse
-import com.pbcplume.tracker.data.model.WaterAppearanceObservation
 import com.pbcplume.tracker.databinding.FragmentHomeBinding
 import com.pbcplume.tracker.ui.SnorkelUiState
 import com.pbcplume.tracker.ui.SnorkelViewModel
+import com.pbcplume.tracker.util.SnorkelFormat
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -85,8 +85,7 @@ class HomeFragment : Fragment() {
         // Recorded replay banner
         if (data.mode == "recorded_replay") {
             binding.tvModeBanner.visibility = View.VISIBLE
-            binding.tvModeBanner.text = getString(R.string.recorded_replay) +
-                    " · " + data.modeDisclaimershortenedIfNeeded()
+            binding.tvModeBanner.text = getString(R.string.recorded_replay)
         } else {
             binding.tvModeBanner.visibility = View.GONE
         }
@@ -114,11 +113,16 @@ class HomeFragment : Fragment() {
         binding.tvHeroCamera.text = appearance?.let { "${it.location} · ${it.cameraId}" }
             ?: health?.let { "${it.location} · ${it.view ?: it.cameraId}" }
             ?: getString(R.string.na)
-        binding.tvHeroTime.text = appearance?.observedAtLocal
-            ?: getString(R.string.na)
-        binding.tvHeroFreshness.text = health?.freshness
-            ?: appearance?.status
-            ?: getString(R.string.na)
+
+        val observed = SnorkelFormat.time(appearance?.observedAt ?: health?.observedAt)
+        val retrieved = SnorkelFormat.time(appearance?.fetchedAt ?: health?.fetchedAt)
+        binding.tvHeroTime.text = when {
+            observed != null -> "Observed $observed"
+            retrieved != null -> "Retrieved $retrieved · capture time unverified"
+            else -> getString(R.string.na)
+        }
+
+        binding.tvHeroFreshness.text = SnorkelFormat.statusLabel(health?.status ?: appearance?.status)
 
         // Wind
         data.weather?.wind?.let { w ->
@@ -170,10 +174,6 @@ class HomeFragment : Fragment() {
 
         // C-16
         binding.tvC16Notes.text = data.c16?.notes ?: getString(R.string.na)
-    }
-
-    private fun SnorkelConditionsResponse.modeDisclaimershortenedIfNeeded(): String {
-        return if (modeDisclaimer.length > 120) modeDisclaimer.take(120) + "…" else modeDisclaimer
     }
 
     private fun openEvidenceSheet() {
