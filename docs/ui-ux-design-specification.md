@@ -320,16 +320,20 @@ This section records the approved design tokens and layout for the camera-first 
 
 | Semantic role | Light | Dark |
 | --- | --- | --- |
-| background | #F4F9FB | #0B202B |
-| surface | #FFFFFF | #143542 |
-| primary | #006064 | #76DED8 |
-| onPrimary | #FFFFFF | #0B202B |
-| primaryContainer | #E0F2F1 | #1E3F4D |
-| onPrimaryContainer | #005B4F | #76DED8 |
-| onSurface | #0B202B | #EEF9FB |
-| onSurfaceVariant | #5A7480 | #9DB4C0 |
-| wind accent | #006064 | #76DED8 |
-| rain accent | #0D47A1 | #6CB6FF |
+| screen background | #F4F9FB | #041B29 |
+| toolbar | #FFFFFF | #06283D |
+| main card surface | #FFFFFF | #0B3046 |
+| raised card surface | #E4F0F3 | #123E54 |
+| subtle card outline | #D7E4EA | #28566C |
+| primary text | #0B202B | #F0F8FC |
+| secondary text | #5A7480 | #AAC4D3 |
+| icons, links, selected controls | #006064 | #64DDED |
+| primary | #006064 | #64DDED |
+| onPrimary | #FFFFFF | #041B29 |
+| primaryContainer | #E0F2F1 | #123E54 |
+| onPrimaryContainer | #005B4F | #64DDED |
+| onSurface | #0B202B | #F0F8FC |
+| onSurfaceVariant | #5A7480 | #AAC4D3 |
 | experimental/unclear | #5A7480 | #9DB4C0 |
 | amber (status only) | #B07D00 | #FFDA86 |
 
