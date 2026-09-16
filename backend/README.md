@@ -27,6 +27,17 @@ Interactive API docs: **http://localhost:8000/docs**
 ### `GET /api/status`
 System health and last-update timestamps for each data source.
 
+### `GET /api/snorkel-conditions`
+Recorded replay snapshot from the devin-handoff PoCs:
+- **cameras** — source health, timestamps, provenance and status for each camera
+- **water_appearance** — headline, colour samples and ROI bounds for reviewed cameras
+- **weather** — Open-Meteo wind (FROM direction) and 24-hour rain windows
+- **algae** — USF FA/FAD rendered-image proxy with period and legend bounds
+- **c16** — SFWMD information link (live discharge not measured)
+- **surface_motion** — developer-only reference example, not live
+
+This endpoint is intentionally replay-only; each source keeps its own `observed_at` and is not presented as current.
+
 ### `GET /api/conditions?lat={lat}&lon={lon}`
 Full conditions snapshot:
 - **current** — speed/direction (NOAA CO-OPS, tidal proxy fallback)

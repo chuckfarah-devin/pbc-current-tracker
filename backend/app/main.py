@@ -9,13 +9,16 @@ Interactive docs: http://localhost:8000/docs
 """
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.routers import conditions as conditions_router
+from app.routers import snorkel_conditions as snorkel_router
 from app.routers import status as status_router
 
 logging.basicConfig(
@@ -48,6 +51,13 @@ app.add_middleware(
 
 app.include_router(status_router.router, prefix="/api", tags=["status"])
 app.include_router(conditions_router.router, prefix="/api", tags=["conditions"])
+app.include_router(snorkel_router.router, prefix="/api", tags=["snorkel"])
+
+# Serve recorded PoC demo assets (camera, appearance, sargassum, motion images)
+# for the replay endpoint. This is mounted only when the handoff directory exists.
+_replay_assets = Path(settings.poc_handoff_dir) / settings.replay_demo_dir
+if _replay_assets.is_dir():
+    app.mount("/fixtures", StaticFiles(directory=_replay_assets), name="fixtures")
 
 
 @app.get("/", include_in_schema=False)

@@ -2,7 +2,14 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mapFragment">
+    app:startDestination="@id/homeFragment">
+
+    <fragment android:id="@+id/homeFragment"
+        android:name="com.pbcplume.tracker.ui.home.HomeFragment"
+        android:label="@string/title_home">
+        <action android:id="@+id/action_home_to_settings"
+            app:destination="@id/settingsFragment" />
+    </fragment>
 
     <fragment android:id="@+id/mapFragment"
         android:name="com.pbcplume.tracker.ui.map.MapFragment"

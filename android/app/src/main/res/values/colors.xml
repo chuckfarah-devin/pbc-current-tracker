@@ -12,6 +12,14 @@
     <!-- Drag handle -->
     <color name="handle_color">#BDBDBD</color>
     <!-- Material seed -->
-    <color name="md_theme_primary">#0077B6</color>
-    <color name="md_theme_secondary">#00B4D8</color>
+    <color name="md_theme_primary">#7EE2D0</color>
+    <color name="md_theme_secondary">#006C64</color>
+    <color name="md_theme_background">#071F2D</color>
+    <color name="md_theme_surface">#123343</color>
+    <color name="md_theme_on_surface">#EAF6F8</color>
+    <color name="md_theme_primary_container">#123343</color>
+    <color name="md_theme_on_primary_container">#EAF6F8</color>
+    <!-- Snorkel index badge colors -->
+    <color name="snorkel_accent">#7EE2D0</color>
+    <color name="snorkel_amber">#FFB74D</color>
 </resources>

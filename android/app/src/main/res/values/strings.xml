@@ -23,6 +23,22 @@
     <string name="cd_refresh">Refresh conditions</string>
     <!-- Titles -->
     <string name="title_map">Map</string>
+    <string name="title_home">PBC Snorkel</string>
     <string name="title_settings">Settings</string>
     <string name="title_debug">Debug — Raw JSON</string>
+    <string name="title_evidence">Evidence</string>
+    <string name="refresh">Refresh</string>
+    <string name="see_evidence">See evidence</string>
+    <string name="wind">Wind</string>
+    <string name="rain_context">Rain context</string>
+    <string name="offshore_algae">Offshore floating algae</string>
+    <string name="c16_info">C-16 runoff information</string>
+    <string name="open_sfwmd">Open SFWMD information</string>
+    <string name="recorded_replay">Recorded replay</string>
+    <string name="developer_only">Developer-only</string>
+    <string name="nearby_cameras">Nearby camera context</string>
+    <string name="source_link">Source link</string>
+    <string name="observed_at">Observed</string>
+    <string name="fetched_at">Retrieved</string>
+    <string name="status_experimental">Experimental</string>
 </resources>

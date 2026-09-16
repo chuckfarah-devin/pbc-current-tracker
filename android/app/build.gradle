@@ -63,6 +63,9 @@ dependencies {
     // Mapbox Maps SDK v11
     implementation "com.mapbox.maps:android:11.3.0"
 
+    // Image loading
+    implementation "io.coil-kt:coil:2.6.0"
+
     // Logging
     implementation "com.jakewharton.timber:timber:5.0.1"
 }
