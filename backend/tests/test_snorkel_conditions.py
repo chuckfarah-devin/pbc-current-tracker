@@ -49,6 +49,26 @@ class SnorkelConditionsTests(unittest.TestCase):
         for a in data["water_appearance"]:
             self.assertTrue(a["framing_verified"])
 
+    def test_replay_sargassum_has_exact_period_dates_and_provenance(self):
+        r = self.client.get("/api/snorkel-conditions")
+        data = r.json()
+        algae = data["algae"]
+        self.assertIsNotNone(algae)
+        self.assertIsNotNone(algae["period_start"])
+        self.assertIsNotNone(algae["period_end"])
+        self.assertEqual(algae["composite"], "7DAY")
+        self.assertTrue(algae["nominal_resolution_m"])
+        self.assertTrue(
+            any("sargassum" in lim.lower() for lim in algae["limitations"])
+        )
+
+    def test_replay_limitations_use_sargassum_wording(self):
+        r = self.client.get("/api/snorkel-conditions")
+        data = r.json()
+        self.assertTrue(
+            any("Sargassum" in lim for lim in data["limitations"])
+        )
+
     def test_live_mode_is_reachable_without_fetching(self):
         """Live endpoint should be reachable when live-cache already exists."""
         with patch(

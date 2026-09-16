@@ -36,7 +36,7 @@ Combined snorkel-conditions snapshot. Default `mode` is `recorded_replay`.
 - **cameras** — source health, timestamps, provenance, `age_minutes` and status
 - **water_appearance** — shown for visual review only; colour samples suppressed until framing is verified
 - **weather** — Open-Meteo wind (FROM direction) and 24-hour rain windows
-- **algae** — USF FA/FAD rendered-image proxy; exact composite period from a bounded search
+- **sargassum** — USF FA/FAD rendered-image color proxy; exact 7-day composite period from a bounded search
 - **c16** — SFWMD information link (live discharge not measured)
 - **surface_motion** — developer-only reference example, not live
 

@@ -1,8 +1,10 @@
 package com.pbcplume.tracker.util
 
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -47,11 +49,31 @@ object SnorkelFormat {
         }
     }
 
+    fun periodAge(periodEnd: String?): String? {
+        if (periodEnd.isNullOrBlank()) return null
+        return try {
+            val end = LocalDate.parse(periodEnd)
+            val today = LocalDate.now(ZoneId.of("America/New_York"))
+            val days = ChronoUnit.DAYS.between(end, today)
+            when {
+                days < 0 -> "period ends in the future"
+                days == 0L -> "ended today"
+                days == 1L -> "ended 1 day ago"
+                else -> "ended $days days ago"
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     fun statusLabel(status: String?): String = when (status) {
         "stream_advancing_capture_unverified" -> "Stream active, capture time unverified"
         "fresh_image_review_needed" -> "Fresh image, needs framing review"
         "stream_not_advancing_in_short_check" -> "Stream not advancing in short check"
         "framing_unverified" -> "Framing not verified · no colour claim"
+        "OFFSHORE ALGAE SIGNAL PRESENT", "Offshore algae signal present" -> "Image colors consistent with sargassum"
+        "NO COLORED SIGNAL IDENTIFIED", "No colored signal identified" -> "No sargassum image colors identified"
+        "INSUFFICIENT IMAGE DATA", "Insufficient image data" -> "Insufficient image data"
         "stale" -> "Earlier view"
         "unavailable" -> "Source unavailable"
         "unknown" -> "Unverified time"

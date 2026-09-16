@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased] Sargassum naming and bounded composite retrieval
+
+### Changed
+- Rename user-facing section from `Offshore floating algae` to `Offshore sargassum` in strings, layouts and backend wording.
+- Live USF sargassum search requests only `7DAY` products and selects the closest valid composite ending date within a bounded lookback.
+- Display exact `period_start` to `period_end` and elapsed age (`ended N days ago`) on the algae/sargassum card and evidence sheet.
+- Qualify sargassum detection as rendered-image color matching; do not imply measured biomass, density or beaching severity.
+- Update `floating_sargassum_card_poc.py` status strings and source language to `sargassum`.
+- Add `SnorkelFormat.periodAge()` and extend backend tests for exact sargassum provenance and qualified wording.
+
 ## [Unreleased] UI polish from first-run feedback
 
 ### Changed

@@ -148,9 +148,12 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
         data.algae?.let { a ->
             val region = a.regions.find { it.name.contains("Boynton", ignoreCase = true) }
                 ?: a.regions.firstOrNull()
+            val periodAge = SnorkelFormat.periodAge(a.periodEnd)
+            val periodAgeText = periodAge?.let { " · $it" } ?: ""
             binding.tvEvidenceAlgae.text = (
-                "${region?.status ?: getString(R.string.na)}\n" +
-                "${a.periodStart} to ${a.periodEnd} · ${a.nominalResolutionM} m composite\n" +
+                "${region?.let { SnorkelFormat.statusLabel(it.status) } ?: getString(R.string.na)}\n" +
+                "${a.periodStart} to ${a.periodEnd}$periodAgeText · ${a.nominalResolutionM} m composite\n" +
+                "Rendered-image color match; not measured biomass or beaching severity.\n" +
                 (region?.interpretation ?: "")
             )
         } ?: run {

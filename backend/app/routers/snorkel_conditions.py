@@ -307,7 +307,7 @@ def _build_algae(
         regions=regions,
         limitations=[
             data.get("freshness", ""),
-            "Palette fractions are not algae density/biomass or beach severity.",
+            "Sargassum status is a rendered-image color match; not measured density, biomass or beach severity.",
         ],
     )
 
@@ -473,7 +473,7 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
     limitations = [
         "Image colour thresholds are exploratory.",
         "Weather is a model estimate, not a rain gauge.",
-        "Algae is a rendered-image proxy, not biomass or beach severity.",
+        "Sargassum detection is a rendered-image color proxy, not measured biomass or beach severity.",
         "Surface motion is experimental and developer-only.",
         "C-16 live discharge is not measured here.",
         "Live-mode framing is unverified; colour claims are suppressed.",
@@ -536,7 +536,7 @@ async def get_snorkel_conditions(
         limitations=[
             "Image colour thresholds are exploratory.",
             "Weather is a model estimate, not a rain gauge.",
-            "Algae is a rendered-image proxy, not biomass or beach severity.",
+            "Sargassum detection is a rendered-image color proxy, not measured biomass or beach severity.",
             "Surface motion is experimental and developer-only.",
             "C-16 live discharge is not measured here.",
         ],

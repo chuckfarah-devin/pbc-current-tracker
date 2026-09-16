@@ -167,8 +167,14 @@ class HomeFragment : Fragment() {
         data.algae?.let { a ->
             val region = a.regions.find { it.name.contains("Boynton", ignoreCase = true) }
                 ?: a.regions.firstOrNull()
-            binding.tvAlgaeStatus.text = region?.status ?: a.periodEnd
-            binding.tvAlgaePeriod.text = "${a.periodStart} to ${a.periodEnd} · nominal ${a.nominalResolutionM}m composite"
+            val periodAge = SnorkelFormat.periodAge(a.periodEnd)
+            binding.tvAlgaeStatus.text = region?.let { SnorkelFormat.statusLabel(it.status) }
+                ?: getString(R.string.na)
+            binding.tvAlgaePeriod.text = buildString {
+                append("${a.periodStart} to ${a.periodEnd}")
+                if (periodAge != null) append(" · $periodAge")
+                append(" · nominal ${a.nominalResolutionM}m composite")
+            }
         } ?: run {
             binding.tvAlgaeStatus.text = getString(R.string.na)
             binding.tvAlgaePeriod.text = getString(R.string.na)
