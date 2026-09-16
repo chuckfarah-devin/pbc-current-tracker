@@ -118,6 +118,8 @@ class AlgaeObservation(BaseModel):
     composite: Optional[str] = None
     nominal_resolution_m: Optional[int] = None
     source_url: Optional[str] = None
+    source_image_url: Optional[str] = None
+    source_legend_url: Optional[str] = None
     source_bounds_wsen: list[float] = []
     regions: list[AlgaeRegion] = []
     limitations: list[str] = []

@@ -303,6 +303,8 @@ def _build_algae(
         composite=src.get("composite"),
         nominal_resolution_m=src.get("nominal_resolution_m"),
         source_url=src.get("page_url"),
+        source_image_url=src.get("image_url"),
+        source_legend_url=src.get("legend_url"),
         source_bounds_wsen=data.get("source_bounds_wsen", []),
         regions=regions,
         limitations=[
@@ -326,14 +328,14 @@ def _build_motion(base: str) -> SurfaceMotionObservation | None:
         developer_only=True,
         regions_image_url=image_url,
         clip_url=None,
-        user_label="Likely northward · user-confirmed example",
-        automated_observation="Leftward ripple/reflection movement in three patches.",
+        user_label="Likely northward · recorded reference, not live",
+        automated_observation="Leftward ripple/reflection movement in the recorded northward reference clip.",
         interpretation=(
-            "Automated observation: leftward ripple/reflection movement. "
-            "User field interpretation: northward surface flow. "
-            "No measured speed; not a current live reading."
+            "Recorded reference only; this is not a live camera reading. "
+            "The reference demonstrates northward surface flow in the three reflection patches. "
+            "No measured speed; validate live examples before relying on the indicator."
         ),
-        status="experimental; developer-only",
+        status="experimental; recorded reference",
         limitations=[
             "Reference clip only; validate orientation, texture and south/weak/panning examples before live use.",
             "Do not use sign agreement alone as confidence.",
@@ -475,6 +477,9 @@ def _update_live_sources(live_dir: Path) -> dict[str, tuple[bool, str]]:
         except Exception:
             pass
     if delray_checked_at and (live_dir / "camera" / "delray_sample.ts").exists():
+        # Never keep a stale motion result; a failed run leaves the directory empty.
+        if (live_dir / "motion").exists():
+            shutil.rmtree(live_dir / "motion", ignore_errors=True)
         motion_ok, motion_err = _run_poc(
             "delray_surface_flow_poc.py",
             [

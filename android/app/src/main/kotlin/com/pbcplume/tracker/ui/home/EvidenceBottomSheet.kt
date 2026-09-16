@@ -145,6 +145,17 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
             binding.tvEvidenceRain.text = getString(R.string.na)
         }
 
+        fun setLinkButton(btn: android.view.View, url: String?) {
+            if (url?.isNotBlank() == true) {
+                btn.visibility = View.VISIBLE
+                btn.setOnClickListener {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                }
+            } else {
+                btn.visibility = View.GONE
+            }
+        }
+
         data.algae?.let { a ->
             val region = a.regions.find { it.name.contains("Boynton", ignoreCase = true) }
                 ?: a.regions.firstOrNull()
@@ -156,8 +167,14 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
                 "Rendered-image color match; not measured biomass or beaching severity.\n" +
                 (region?.interpretation ?: "")
             )
+            setLinkButton(binding.btnEvidenceUsfChart, a.sourceImageUrl)
+            setLinkButton(binding.btnEvidenceUsfSource, a.sourceUrl)
+            setLinkButton(binding.btnEvidenceUsfLegend, a.sourceLegendUrl)
         } ?: run {
             binding.tvEvidenceAlgae.text = getString(R.string.na)
+            binding.btnEvidenceUsfChart.visibility = View.GONE
+            binding.btnEvidenceUsfSource.visibility = View.GONE
+            binding.btnEvidenceUsfLegend.visibility = View.GONE
         }
 
         val limitations = mutableListOf<String>()

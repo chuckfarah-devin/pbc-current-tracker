@@ -120,6 +120,8 @@ data class AlgaeObservation(
     val composite: String?,
     @Json(name = "nominal_resolution_m") val nominalResolutionM: Int?,
     @Json(name = "source_url") val sourceUrl: String?,
+    @Json(name = "source_image_url") val sourceImageUrl: String?,
+    @Json(name = "source_legend_url") val sourceLegendUrl: String?,
     @Json(name = "source_bounds_wsen") val sourceBoundsWsen: List<Double>,
     val regions: List<AlgaeRegion> = emptyList(),
     val limitations: List<String> = emptyList()

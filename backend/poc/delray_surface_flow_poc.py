@@ -12,12 +12,35 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-REGIONS = {
+BASE_FRAME_SIZE = (1280, 526)
+BASE_REGIONS = {
     "Left of reflection": (180, 310, 340, 355),
     "Reflection edge": (370, 315, 490, 355),
     "Right of reflection": (670, 298, 790, 320),
 }
-EXPECTED_FRAME_SIZE = (1280, 526)
+MIN_FRAME_SIZE = (640, 240)
+
+
+def scale_regions(h: int, w: int) -> dict[str, tuple[int, int, int, int]] | None:
+    base_w, base_h = BASE_FRAME_SIZE
+    scale_x = w / base_w
+    scale_y = h / base_h
+    if (
+        w < MIN_FRAME_SIZE[0]
+        or h < MIN_FRAME_SIZE[1]
+        or not (0.5 <= scale_x <= 2.0)
+        or not (0.5 <= scale_y <= 2.0)
+    ):
+        return None
+    regions = {}
+    for name, (x, y, r, t) in BASE_REGIONS.items():
+        regions[name] = (
+            int(round(x * scale_x)),
+            int(round(y * scale_y)),
+            int(round(r * scale_x)),
+            int(round(t * scale_y)),
+        )
+    return regions
 
 
 def read_frames(path, step=6):
@@ -58,10 +81,9 @@ def analyze(frames, regions):
 def check_framing(frames, regions):
     if not frames:
         raise ValueError("No frames decoded")
+    if regions is None:
+        return False, "Frame size is outside the supported range for the reference regions."
     h, w = frames[0].shape[:2]
-    expected_w, expected_h = EXPECTED_FRAME_SIZE
-    if (w, h) != (expected_w, expected_h):
-        return False, f"Frame size {w}x{h} does not match expected {expected_w}x{expected_h}"
     for (x, y, r, t) in regions.values():
         if not (0 <= x < r <= w and 0 <= y < t <= h):
             return False, f"Region {x},{y},{r},{t} is outside {w}x{h}"
@@ -73,8 +95,8 @@ def check_framing(frames, regions):
     return True, ""
 
 
-def classify(live, reference=None, motion_threshold=0.08, agreement_threshold=0.65, camera_move_threshold=0.4):
-    names = list(REGIONS.keys())
+def classify(live, reference, agreement_threshold=0.65):
+    names = list(BASE_REGIONS.keys())
     dxs = [live[n]["median_dx_pixels_per_0_2s"] for n in names]
     dys = [live[n]["median_dy_pixels_per_0_2s"] for n in names]
     lefts = [live[n]["leftward_pair_percent"] / 100.0 for n in names]
@@ -83,6 +105,18 @@ def classify(live, reference=None, motion_threshold=0.08, agreement_threshold=0.
     if any(c < 10 for c in pair_counts):
         return "unclear", "Too few frame pairs for a reliable motion estimate."
 
+    # Calibrate thresholds from the recorded northward reference.
+    ref_right = reference.get("Right of reflection", {})
+    ref_edge = reference.get("Reflection edge", {})
+    ref_mag = max(
+        0.05,
+        abs(ref_right.get("median_dx_pixels_per_0_2s", 0.0)),
+        abs(ref_edge.get("median_dx_pixels_per_0_2s", 0.0)),
+    )
+    motion_threshold = 0.1 * ref_mag
+    camera_move_threshold = ref_mag
+
+    # Camera-movement check: all regions moving together too strongly suggests pan.
     dx_range = max(dxs) - min(dxs)
     if abs(dx_range) < 0.1 and abs(np.median(dxs)) > camera_move_threshold:
         return "unclear", "Similar large horizontal motion across all regions suggests camera movement, not surface flow."
@@ -136,7 +170,9 @@ def main():
     observed_at = args.observed_at or datetime.now(timezone.utc).isoformat()
     try:
         frames = read_frames(args.input)
-        ok, reason = check_framing(frames, REGIONS)
+        h, w = frames[0].shape[:2] if frames else (0, 0)
+        regions = scale_regions(h, w) if frames else None
+        ok, reason = check_framing(frames, regions)
         if not ok:
             result = {
                 "status": "unclear",
@@ -151,10 +187,10 @@ def main():
                 "source_url": args.source_url,
             }
         else:
-            live = analyze(frames, REGIONS)
+            live = analyze(frames, regions)
             status, note = classify(live, reference)
             user_label = f"Surface flow: {status.replace('_', ' ')}"
-            annotate(frames, REGIONS, args.output)
+            annotate(frames, regions, args.output)
             result = {
                 "status": status,
                 "framing_verified": True,

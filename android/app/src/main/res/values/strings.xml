@@ -33,6 +33,9 @@
     <string name="rain_context">Rain context</string>
     <string name="offshore_algae">Offshore sargassum</string>
     <string name="surface_flow">Surface flow (experimental)</string>
+    <string name="view_usf_chart">View USF chart</string>
+    <string name="usf_source">USF source</string>
+    <string name="usf_legend">Legend</string>
     <string name="c16_info">C-16 runoff information</string>
     <string name="open_sfwmd">Open SFWMD information</string>
     <string name="recorded_replay">Recorded demo · sources have different dates</string>

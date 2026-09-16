@@ -164,6 +164,15 @@ class HomeFragment : Fragment() {
         }
 
         // Algae
+        fun setLinkButton(btn: android.view.View, url: String?) {
+            if (url?.isNotBlank() == true) {
+                btn.visibility = View.VISIBLE
+                btn.setOnClickListener { openUrl(url) }
+            } else {
+                btn.visibility = View.GONE
+            }
+        }
+
         data.algae?.let { a ->
             val region = a.regions.find { it.name.contains("Boynton", ignoreCase = true) }
                 ?: a.regions.firstOrNull()
@@ -175,9 +184,15 @@ class HomeFragment : Fragment() {
                 if (periodAge != null) append(" · $periodAge")
                 append(" · nominal ${a.nominalResolutionM}m composite")
             }
+            setLinkButton(binding.btnViewUsfChart, a.sourceImageUrl)
+            setLinkButton(binding.btnViewUsfSource, a.sourceUrl)
+            setLinkButton(binding.btnViewUsfLegend, a.sourceLegendUrl)
         } ?: run {
             binding.tvAlgaeStatus.text = getString(R.string.na)
             binding.tvAlgaePeriod.text = getString(R.string.na)
+            binding.btnViewUsfChart.visibility = View.GONE
+            binding.btnViewUsfSource.visibility = View.GONE
+            binding.btnViewUsfLegend.visibility = View.GONE
         }
 
         // Surface flow (experimental)
@@ -209,13 +224,17 @@ class HomeFragment : Fragment() {
             .show(childFragmentManager, EvidenceBottomSheet.TAG)
     }
 
-    private fun openSfwmd() {
-        val url = currentConditions?.c16?.infoUrl ?: "https://www.sfwmd.gov/"
+    private fun openUrl(url: String) {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
+    private fun openSfwmd() {
+        val url = currentConditions?.c16?.infoUrl ?: "https://www.sfwmd.gov/"
+        openUrl(url)
+    }
+
     private fun openSurfaceFlowEvidence(url: String) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        openUrl(url)
     }
 
     override fun onDestroyView() {
