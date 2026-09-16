@@ -82,13 +82,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun bind(data: SnorkelConditionsResponse) {
-        // Mode banner (recorded or live)
-        binding.tvModeBanner.visibility = View.VISIBLE
-        binding.tvModeBanner.text = when (data.mode) {
-            "live" -> "Live fetch · check each observation time"
-            else -> getString(R.string.recorded_replay)
-        }
-
         // Camera hero — default to Delray, otherwise the first available appearance
         val appearance = data.waterAppearance.find { it.cameraId == "delray" }
             ?: data.waterAppearance.firstOrNull()
@@ -125,6 +118,7 @@ class HomeFragment : Fragment() {
         val status = SnorkelFormat.statusLabel(health?.status ?: appearance?.status)
         val ageText = SnorkelFormat.ageLabel(age)
         binding.tvHeroFreshness.text = if (ageText != null) "$status · $ageText" else status
+        binding.tvHeroFreshness.visibility = if ((health?.status ?: appearance?.status) != null) View.VISIBLE else View.GONE
 
         // Wind
         data.weather?.wind?.let { w ->
@@ -198,6 +192,9 @@ class HomeFragment : Fragment() {
         // Surface flow (experimental)
         data.surfaceMotion?.let { m ->
             binding.tvSurfaceFlowStatus.text = m.userLabel ?: getString(R.string.na)
+            binding.tvSurfaceFlowSupport.text = m.automatedObservation ?: m.interpretation ?: ""
+            binding.tvSurfaceFlowSupport.visibility =
+                if (m.automatedObservation.isNullOrBlank() && m.interpretation.isNullOrBlank()) View.GONE else View.VISIBLE
             val flowObserved = SnorkelFormat.time(m.observedAt)
             val flowAnalyzed = SnorkelFormat.time(m.fetchedAt)
             binding.tvSurfaceFlowTime.text = buildString {
@@ -217,6 +214,7 @@ class HomeFragment : Fragment() {
             }
         } ?: run {
             binding.tvSurfaceFlowStatus.text = getString(R.string.na)
+            binding.tvSurfaceFlowSupport.visibility = View.GONE
             binding.tvSurfaceFlowTime.text = getString(R.string.na)
             binding.btnSurfaceFlowEvidence.visibility = View.GONE
         }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PBC Plume Tracker</string>
+    <string name="app_name">PBC Snorkel</string>
     <string name="loading">Loading…</string>
     <string name="na">N/A</string>
     <string name="error_fetch">Fetch error</string>
@@ -8,6 +8,7 @@
     <string name="btn_conditions">Conditions</string>
     <string name="btn_settings">Settings</string>
     <string name="btn_save">Save</string>
+    <string name="btn_close">Close</string>
     <!-- Section headers -->
     <string name="section_snorkel">Snorkel Index</string>
     <string name="section_current">Current</string>
@@ -21,20 +22,23 @@
     <!-- Content descriptions -->
     <string name="cd_current_arrow">Current direction arrow</string>
     <string name="cd_refresh">Refresh conditions</string>
+    <string name="cd_settings">Open settings</string>
     <!-- Titles -->
     <string name="title_map">Map</string>
     <string name="title_home">PBC Snorkel</string>
     <string name="title_settings">Settings</string>
     <string name="title_debug">Debug — Raw JSON</string>
-    <string name="title_evidence">Evidence</string>
+    <string name="title_evidence">Camera evidence</string>
     <string name="refresh">Refresh</string>
     <string name="see_evidence">See evidence</string>
+    <string name="open_camera">Open camera</string>
     <string name="wind">Wind</string>
     <string name="rain_context">Rain context</string>
     <string name="offshore_algae">Offshore sargassum</string>
-    <string name="surface_flow">Surface flow (experimental)</string>
-    <string name="view_usf_chart">View USF chart</string>
-    <string name="usf_source">USF source</string>
+    <string name="surface_flow">Surface flow</string>
+    <string name="surface_flow_experimental">Experimental</string>
+    <string name="view_usf_chart">Chart</string>
+    <string name="usf_source">Source</string>
     <string name="usf_legend">Legend</string>
     <string name="c16_info">C-16 runoff information</string>
     <string name="open_sfwmd">Open SFWMD information</string>
@@ -46,4 +50,6 @@
     <string name="observed_at">Observed</string>
     <string name="fetched_at">Retrieved</string>
     <string name="status_experimental">Experimental</string>
+    <string name="open_link">Open link</string>
+    <string name="analyzed_at">analyzed</string>
 </resources>

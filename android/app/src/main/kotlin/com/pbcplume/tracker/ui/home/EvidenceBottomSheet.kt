@@ -51,6 +51,8 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.btnClose.setOnClickListener { dismiss() }
+
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
@@ -82,7 +84,12 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
         val age = health?.ageMinutes
         val provider = health?.observedAtLocal ?: appearance?.observedAtLocal
         val retrieved = SnorkelFormat.time(health?.fetchedAt ?: appearance?.fetchedAt)
-        binding.tvEvidenceObserved.text = SnorkelFormat.cameraTime(observed, age, provider, retrieved)
+        binding.tvEvidenceObserved.text = when {
+            observed != null -> "Observed $observed"
+            retrieved != null -> "Retrieved $retrieved"
+            provider != null -> "Capture shown: $provider"
+            else -> "Time unavailable"
+        }
 
         val status = SnorkelFormat.statusLabel(health?.status ?: appearance?.status)
         val ageText = SnorkelFormat.ageLabel(age)
@@ -100,30 +107,30 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
                 val tv = TextView(requireContext())
                 tv.text = "Framing not verified · no automated colour claim."
                 tv.setPadding(0, 4, 0, 4)
+                tv.setTextAppearance(requireContext(), com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
                 tv.setTextColor(requireContext().getColor(android.R.color.white))
                 binding.containerSamples.addView(tv)
             }
             appearance.samples.isNullOrEmpty() -> {
                 val tv = TextView(requireContext())
                 tv.text = getString(R.string.na)
+                tv.setTextAppearance(requireContext(), com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
                 tv.setTextColor(requireContext().getColor(android.R.color.white))
                 binding.containerSamples.addView(tv)
             }
             else -> {
                 appearance.samples.forEach { s ->
                     val tv = TextView(requireContext())
-                    tv.text = (
-                        "${s.region}: ${"%.1f".format(s.blueGreenPercent)}% blue-green, " +
-                        "${"%.1f".format(s.warmPercent)}% warm, " +
-                        "${"%.1f".format(s.otherPercent)}% other " +
-                        "· ${s.pixels} pixels"
-                        )
+                    tv.text = "${s.region} · ${SnorkelFormat.colorLabel(s)}"
                     tv.setPadding(0, 4, 0, 4)
+                    tv.setTextAppearance(requireContext(), com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
                     tv.setTextColor(requireContext().getColor(android.R.color.white))
                     binding.containerSamples.addView(tv)
                 }
             }
         }
+        binding.tvEvidenceCaveat.visibility = if (appearance?.framingVerified == true) View.VISIBLE else View.GONE
+        binding.tvEvidenceCaveat.text = "Image colour, not underwater visibility."
 
         data.weather?.let { w ->
             val speed = w.wind.speedMph ?: w.wind.speedKn?.times(1.150779448)
@@ -143,6 +150,16 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
         } ?: run {
             binding.tvEvidenceWind.text = getString(R.string.na)
             binding.tvEvidenceRain.text = getString(R.string.na)
+        }
+
+        data.surfaceMotion?.let { m ->
+            binding.tvEvidenceSurfaceFlow.text = m.userLabel ?: getString(R.string.na)
+            binding.tvEvidenceSurfaceFlowSupport.text = m.automatedObservation ?: m.interpretation ?: ""
+            binding.tvEvidenceSurfaceFlowSupport.visibility =
+                if (m.automatedObservation.isNullOrBlank() && m.interpretation.isNullOrBlank()) View.GONE else View.VISIBLE
+        } ?: run {
+            binding.tvEvidenceSurfaceFlow.text = getString(R.string.na)
+            binding.tvEvidenceSurfaceFlowSupport.visibility = View.GONE
         }
 
         fun setLinkButton(btn: android.view.View, url: String?) {

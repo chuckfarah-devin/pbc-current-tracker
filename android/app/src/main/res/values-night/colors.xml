@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark snorkel palette -->
+    <color name="md_theme_primary">#76DED8</color>
+    <color name="md_theme_on_primary">#0B202B</color>
+    <color name="md_theme_secondary">#76DED8</color>
+    <color name="md_theme_background">#0B202B</color>
+    <color name="md_theme_surface">#143542</color>
+    <color name="md_theme_on_surface">#EEF9FB</color>
+    <color name="md_theme_primary_container">#1E3F4D</color>
+    <color name="md_theme_on_primary_container">#76DED8</color>
+    <color name="md_theme_surface_variant">#1E3F4D</color>
+    <color name="md_theme_on_surface_variant">#9DB4C0</color>
+    <color name="md_theme_error">#FFB4AB</color>
+    <color name="md_theme_on_error">#690005</color>
+    <!-- Snorkel index badge colors (legacy map screen) -->
+    <color name="score_excellent">#2E7D32</color>
+    <color name="score_good">#558B2F</color>
+    <color name="score_fair">#F9A825</color>
+    <color name="score_marginal">#E65100</color>
+    <color name="score_poor">#B71C1C</color>
+    <color name="badge_unknown">#78909C</color>
+    <!-- Status accents -->
+    <color name="current_arrow">#76DED8</color>
+    <color name="snorkel_accent">#76DED8</color>
+    <color name="snorkel_amber">#FFDA86</color>
+    <color name="snorkel_wind">#76DED8</color>
+    <color name="snorkel_rain">#6CB6FF</color>
+    <color name="snorkel_experimental">#9DB4C0</color>
+    <color name="handle_color">#5A7480</color>
+</resources>

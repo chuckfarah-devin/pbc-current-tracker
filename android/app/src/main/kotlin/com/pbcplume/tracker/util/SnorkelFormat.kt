@@ -66,6 +66,17 @@ object SnorkelFormat {
         }
     }
 
+    fun colorLabel(s: com.pbcplume.tracker.data.model.WaterColourSample): String {
+        return when {
+            s.blueGreenPercent >= 45.0 -> "blue-green"
+            s.warmPercent >= 45.0 -> "brown/olive"
+            s.otherPercent >= 45.0 -> "mixed"
+            s.blueGreenPercent >= s.warmPercent && s.blueGreenPercent >= s.otherPercent -> "mostly blue-green"
+            s.warmPercent >= s.otherPercent -> "mostly brown/olive"
+            else -> "mixed"
+        }
+    }
+
     fun statusLabel(status: String?): String = when (status) {
         "stream_advancing_capture_unverified" -> "Stream active, capture time unverified"
         "fresh_image_review_needed" -> "Fresh image, needs framing review"

@@ -1,25 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Snorkel index badge colors -->
+    <!-- Light snorkel palette -->
+    <color name="md_theme_primary">#006064</color>
+    <color name="md_theme_on_primary">#FFFFFF</color>
+    <color name="md_theme_secondary">#005B4F</color>
+    <color name="md_theme_background">#F4F9FB</color>
+    <color name="md_theme_surface">#FFFFFF</color>
+    <color name="md_theme_on_surface">#0B202B</color>
+    <color name="md_theme_primary_container">#E0F2F1</color>
+    <color name="md_theme_on_primary_container">#005B4F</color>
+    <color name="md_theme_surface_variant">#E4F0F3</color>
+    <color name="md_theme_on_surface_variant">#5A7480</color>
+    <color name="md_theme_error">#B3261E</color>
+    <color name="md_theme_on_error">#FFFFFF</color>
+    <!-- Snorkel index badge colors (legacy map screen) -->
     <color name="score_excellent">#2E7D32</color>
     <color name="score_good">#558B2F</color>
     <color name="score_fair">#F9A825</color>
     <color name="score_marginal">#E65100</color>
     <color name="score_poor">#B71C1C</color>
     <color name="badge_unknown">#78909C</color>
-    <!-- Current arrow -->
-    <color name="current_arrow">#1565C0</color>
-    <!-- Drag handle -->
-    <color name="handle_color">#BDBDBD</color>
-    <!-- Material seed -->
-    <color name="md_theme_primary">#7EE2D0</color>
-    <color name="md_theme_secondary">#006C64</color>
-    <color name="md_theme_background">#071F2D</color>
-    <color name="md_theme_surface">#123343</color>
-    <color name="md_theme_on_surface">#EAF6F8</color>
-    <color name="md_theme_primary_container">#123343</color>
-    <color name="md_theme_on_primary_container">#EAF6F8</color>
-    <!-- Snorkel index badge colors -->
-    <color name="snorkel_accent">#7EE2D0</color>
-    <color name="snorkel_amber">#FFB74D</color>
+    <!-- Status accents -->
+    <color name="current_arrow">#006064</color>
+    <color name="snorkel_accent">#006064</color>
+    <color name="snorkel_amber">#B07D00</color>
+    <color name="snorkel_wind">#006064</color>
+    <color name="snorkel_rain">#0D47A1</color>
+    <color name="snorkel_experimental">#5A7480</color>
+    <color name="handle_color">#90A4AE</color>
 </resources>
