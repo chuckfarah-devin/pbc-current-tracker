@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased] UI visual redesign
+
+### Changed
+- Apply the generated design board to the Home screen and evidence sheet.
+- Replace the stacked-card layout with a camera-hero + conditions panel: edge-to-edge
+  hero image with bottom gradient, visible "See evidence" action, surface-flow tile,
+  compact side-by-side Wind/Rain cards, Sargassum card with Chart/Source/Legend links,
+  and an unobtrusive C-16 row.
+- Introduce Material 3 DayNight theme with `values-night/colors.xml` and `themes.xml`.
+- Use semantic light/dark marine palette: mist/white/navy in light; deep navy/teal/icy
+  cyan in dark.
+- Reserve amber for actual sargassum status text; keep experimental/unknown states in
+  neutral colours.
+- Remove the global "Live" banner; per-source capture/retrieval/composite timestamps
+  remain on each card.
+- Evidence sheet restyled with close handle, sample colour rows, retrieval/status chips,
+  surface-flow section and limitations.
+
 ## [Unreleased] Milestone 3 — Delray surface-flow indicator and in-repo PoCs
 
 ### Added
