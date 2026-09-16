@@ -1,4 +1,13 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+# Default paths are relative to this file so the repo is portable.
+# Override with a .env file (see .env.example) or environment variables.
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+_BACKEND_ROOT = _REPO_ROOT / "backend"
+_HANDOFF_SIBLING = _REPO_ROOT.parent / "PBC Snorkel conditions" / "PBC-Snorkel-Devin-Handoff" / "devin-handoff"
 
 
 class Settings(BaseSettings):
@@ -31,14 +40,13 @@ class Settings(BaseSettings):
     cdse_username: str = ""        # free account: dataspace.copernicus.eu
     cdse_password: str = ""        # Sentinel-2 access
 
-    # Path to the extracted PoC handoff package for recorded-replay fixtures
-    poc_handoff_dir: str = (
-        r"C:\Users\chuck\PBC Snorkel conditions\PBC-Snorkel-Devin-Handoff\devin-handoff"
-    )
+    # Path to the extracted PoC handoff package for recorded-replay fixtures.
+    # Set PBC_HANDOFF_DIR in your .env if the sibling-folder default does not match.
+    poc_handoff_dir: str = str(_HANDOFF_SIBLING)
     replay_demo_dir: str = "demo"
 
-    # Path to the maintained PoCs bundled in this repository
-    poc_repo_dir: str = r"C:\Users\chuck\PBC-Current-Tracker\backend\poc"
+    # Path to the maintained PoCs bundled in this repository.
+    poc_repo_dir: str = str(_BACKEND_ROOT / "poc")
 
 
 settings = Settings()
