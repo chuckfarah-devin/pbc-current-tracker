@@ -134,6 +134,7 @@ class C16Observation(BaseModel):
 class SurfaceMotionObservation(BaseModel):
     developer_only: bool = True
     observed_at: Optional[datetime] = None
+    fetched_at: Optional[datetime] = None
     regions_image_url: Optional[str] = None
     clip_url: Optional[str] = None
     user_label: Optional[str] = None

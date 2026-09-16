@@ -358,14 +358,20 @@ def _build_surface_motion(
         image_url = f"{base}/{image_prefix}/motion/regions.jpg"
 
     observed_at = data.get("observed_at")
+    fetched_at = data.get("classified_at_utc")
     try:
         observed_at_dt = datetime.fromisoformat(observed_at) if observed_at else None
     except ValueError:
         observed_at_dt = None
+    try:
+        fetched_at_dt = datetime.fromisoformat(fetched_at) if fetched_at else None
+    except ValueError:
+        fetched_at_dt = None
 
     return SurfaceMotionObservation(
         developer_only=True,
         observed_at=observed_at_dt,
+        fetched_at=fetched_at_dt,
         regions_image_url=image_url,
         clip_url=data.get("source_url"),
         user_label=data.get("user_label"),

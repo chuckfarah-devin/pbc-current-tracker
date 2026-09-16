@@ -87,15 +87,40 @@ def check_framing(frames, regions):
     for (x, y, r, t) in regions.values():
         if not (0 <= x < r <= w and 0 <= y < t <= h):
             return False, f"Region {x},{y},{r},{t} is outside {w}x{h}"
+
     gray = cv2.cvtColor(frames[0], cv2.COLOR_BGR2GRAY)
     rx, ry, rr, rt = regions["Reflection edge"]
     edge = gray[ry:rt, rx:rr]
     if float(edge.std()) < 5.0:
         return False, "Reflection edge region is too uniform; framing or lighting rejected"
+
+    # The reflection edge should sit on water, not on foliage.
+    # Foliage is strongly green-dominant; water reflects the sky (blue/cyan/white)
+    # and is never strongly green-dominant in BGR.
+    FOLIAGE_THRESHOLD = 20.0
+    color = cv2.mean(frames[0][ry:rt, rx:rr])
+    mean_b, mean_g, mean_r = color[:3]
+    if mean_g > mean_b + FOLIAGE_THRESHOLD and mean_g > mean_r + FOLIAGE_THRESHOLD:
+        return False, "Reflection edge color looks like foliage, not water; camera framing differs from reference"
+
+    # The left and right reference regions should also avoid foliage.
+    for side in ("Left of reflection", "Right of reflection"):
+        sx, sy, sr, st = regions[side]
+        side_color = cv2.mean(frames[0][sy:st, sx:sr])
+        sb, sg, sr_ = side_color[:3]
+        if sg > sb + FOLIAGE_THRESHOLD and sg > sr_ + FOLIAGE_THRESHOLD:
+            return False, f"{side} looks like foliage; framing does not match the reference"
+
     return True, ""
 
 
 def classify(live, reference, agreement_threshold=0.65):
+    """Direction classification.
+
+    Thresholds are provisional and calibrated from a single northward reference.
+    Validate with southward, weak-current and camera-pan examples before relying
+    on the labels in production.
+    """
     names = list(BASE_REGIONS.keys())
     dxs = [live[n]["median_dx_pixels_per_0_2s"] for n in names]
     dys = [live[n]["median_dy_pixels_per_0_2s"] for n in names]

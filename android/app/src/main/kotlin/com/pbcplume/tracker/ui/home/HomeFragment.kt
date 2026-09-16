@@ -198,9 +198,16 @@ class HomeFragment : Fragment() {
         // Surface flow (experimental)
         data.surfaceMotion?.let { m ->
             binding.tvSurfaceFlowStatus.text = m.userLabel ?: getString(R.string.na)
-            binding.tvSurfaceFlowTime.text = SnorkelFormat.time(m.observedAt)
-                ?.let { "Observed $it" }
-                ?: getString(R.string.na)
+            val flowObserved = SnorkelFormat.time(m.observedAt)
+            val flowAnalyzed = SnorkelFormat.time(m.fetchedAt)
+            binding.tvSurfaceFlowTime.text = buildString {
+                if (flowObserved != null) append("Observed $flowObserved")
+                if (flowAnalyzed != null) {
+                    if (isNotEmpty()) append(" · ")
+                    append("analyzed $flowAnalyzed")
+                }
+                if (isEmpty()) append(getString(R.string.na))
+            }
             val url = m.clipUrl?.takeIf { it.isNotBlank() } ?: m.regionsImageUrl
             if (url != null) {
                 binding.btnSurfaceFlowEvidence.visibility = View.VISIBLE
