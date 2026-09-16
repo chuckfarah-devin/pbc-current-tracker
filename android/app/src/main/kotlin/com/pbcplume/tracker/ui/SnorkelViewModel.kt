@@ -22,19 +22,27 @@ class SnorkelViewModel(app: Application) : AndroidViewModel(app) {
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     init {
-        refresh()
+        load()
+    }
+
+    fun load() {
+        fetch(mode = null)
     }
 
     fun refresh() {
+        fetch(mode = "live")
+    }
+
+    private fun fetch(mode: String?) {
         viewModelScope.launch {
             _isRefreshing.value = true
             val url = prefs.getString(ConditionsViewModel.PREF_URL, ConditionsViewModel.DEFAULT_URL)
                 ?: ConditionsViewModel.DEFAULT_URL
             val repo = SnorkelConditionsRepository(NetworkModule.buildSnorkelApiService(url))
-            _uiState.value = repo.fetch().fold(
+            _uiState.value = repo.fetch(mode).fold(
                 onSuccess = { SnorkelUiState.Success(it) },
                 onFailure = {
-                    Timber.e(it, "Snorkel refresh failed")
+                    Timber.e(it, "Snorkel fetch failed")
                     SnorkelUiState.Error(it.message ?: "Unknown error")
                 }
             )

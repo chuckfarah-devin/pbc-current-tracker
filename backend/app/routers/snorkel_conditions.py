@@ -1,13 +1,16 @@
-"""GET /api/snorkel-conditions — recorded replay from the devin-handoff PoCs."""
+"""GET /api/snorkel-conditions — recorded replay or live fetch from the devin-handoff PoCs."""
 from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+import shutil
+import subprocess
+import sys
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
 
 from app.config import settings
 from app.models.snorkel_conditions import (
@@ -33,10 +36,15 @@ def _handoff_demo() -> Path:
     return Path(settings.poc_handoff_dir) / settings.replay_demo_dir
 
 
-def _load_json(name: str) -> dict[str, Any] | None:
-    path = _handoff_demo() / name / "result.json"
+def _live_dir() -> Path:
+    return Path(settings.poc_handoff_dir) / "live-check"
+
+
+def _load_json(name: str, source_dir: Path | None = None) -> dict[str, Any] | None:
+    source_dir = source_dir or _handoff_demo()
+    path = source_dir / name / "result.json"
     if not path.exists():
-        logger.warning("Missing replay fixture: %s", path)
+        logger.warning("Missing fixture: %s", path)
         return None
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -65,11 +73,27 @@ def _wind_preference(w: dict[str, Any]) -> tuple[bool, str]:
     return favorable, label
 
 
-def _parse_camera(cam: dict[str, Any], base: str) -> CameraHealthObservation:
+def _parse_dt(value: Any) -> datetime | None:
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value
+    try:
+        return datetime.fromisoformat(value)
+    except Exception:
+        return None
+
+
+def _parse_camera(
+    cam: dict[str, Any],
+    base: str,
+    source_dir: Path,
+    image_prefix: str,
+) -> CameraHealthObservation:
     image_file = cam.get("image_file")
     image_url = None
-    if image_file and (_handoff_demo() / "camera" / image_file).exists():
-        image_url = f"{base}/fixtures/camera/{image_file}"
+    if image_file and (source_dir / "camera" / image_file).exists():
+        image_url = f"{base}/{image_prefix}/camera/{image_file}"
 
     limitations = []
     if cam.get("visual_review"):
@@ -87,6 +111,8 @@ def _parse_camera(cam: dict[str, Any], base: str) -> CameraHealthObservation:
         observed_at=_parse_dt(cam.get("capture_utc")),
         observed_at_local=cam.get("provider_label"),
         freshness=cam.get("freshness"),
+        age_minutes=cam.get("age_minutes"),
+        local_conditions_verified=cam.get("local_conditions_verified", False),
         status=cam.get("status", "unknown"),
         error=cam.get("error"),
         visual_flags=cam.get("visual_flags", []),
@@ -98,28 +124,26 @@ def _parse_camera(cam: dict[str, Any], base: str) -> CameraHealthObservation:
     )
 
 
-def _parse_dt(value: Any) -> datetime | None:
-    if not value:
-        return None
-    if isinstance(value, datetime):
-        return value
-    try:
-        return datetime.fromisoformat(value)
-    except Exception:
-        return None
-
-
-def _build_camera_health(base: str) -> list[CameraHealthObservation]:
-    data = _load_json("camera")
+def _build_camera_health(
+    base: str,
+    source_dir: Path = _handoff_demo(),
+    image_prefix: str = "fixtures",
+) -> list[CameraHealthObservation]:
+    data = _load_json("camera", source_dir)
     if not data:
         return []
-    return [_parse_camera(cam, base) for cam in data.get("cameras", [])]
+    return [_parse_camera(cam, base, source_dir, image_prefix) for cam in data.get("cameras", [])]
 
 
 def _build_appearance(
-    health_by_id: dict[str, CameraHealthObservation], base: str
+    health_by_id: dict[str, CameraHealthObservation],
+    base: str,
+    source_dir: Path = _handoff_demo(),
+    image_prefix: str = "fixtures",
+    framing_verified: bool = True,
+    status_label: str = "recorded; manual review needed",
 ) -> list[WaterAppearanceObservation]:
-    data = _load_json("appearance")
+    data = _load_json("appearance", source_dir)
     if not data:
         return []
 
@@ -127,50 +151,62 @@ def _build_appearance(
     for item in data.get("results", []):
         camera_id = item.get("camera", "unknown")
         health = health_by_id.get(camera_id)
-        image_url = None
-        jpg = _handoff_demo() / "appearance" / f"{camera_id}.jpg"
-        if jpg.exists():
-            image_url = f"{base}/fixtures/appearance/{camera_id}.jpg"
 
-        samples = [
-            WaterColourSample(
-                region=s.get("region", ""),
-                bounds=s.get("bounds", []),
-                warm_percent=s.get("warm_percent", 0.0),
-                blue_green_percent=s.get("blue_green_percent", 0.0),
-                other_percent=s.get("other_percent", 0.0),
-                mean_rgb=s.get("mean_rgb", []),
-                pixels=s.get("pixels", 0),
-            )
-            for s in item.get("samples", [])
-        ]
+        if framing_verified:
+            image_url = None
+            jpg = source_dir / "appearance" / f"{camera_id}.jpg"
+            if jpg.exists():
+                image_url = f"{base}/{image_prefix}/appearance/{camera_id}.jpg"
+            samples = [
+                WaterColourSample(
+                    region=s.get("region", ""),
+                    bounds=s.get("bounds", []),
+                    warm_percent=s.get("warm_percent", 0.0),
+                    blue_green_percent=s.get("blue_green_percent", 0.0),
+                    other_percent=s.get("other_percent", 0.0),
+                    mean_rgb=s.get("mean_rgb", []),
+                    pixels=s.get("pixels", 0),
+                )
+                for s in item.get("samples", [])
+            ]
+            observed_local = item.get("timestamp")
+            headline = item.get("headline", "")
+        else:
+            # Framing is not validated for live: show the raw camera view for visual review.
+            image_url = None
+            samples = []
+            observed_local = health.observed_at_local if health else None
+            headline = "Framing not verified · no colour claim"
 
-        observed_local = item.get("timestamp")
         limitations = [data.get("method", "")] if data.get("method") else []
-        limitations.append("ROI manually selected; pan or framing change requires review.")
+        if framing_verified:
+            limitations.append("ROI manually selected; pan or framing change requires review.")
+        else:
+            limitations.append("Camera framing is not verified. Regions need human review before any colour claim.")
 
         results.append(
             WaterAppearanceObservation(
                 camera_id=camera_id,
                 location=item.get("location", "unknown"),
-                headline=item.get("headline", ""),
+                headline=headline,
                 source_url=item.get("source_url"),
                 image_url=image_url,
                 fetched_at=health.fetched_at if health else None,
                 observed_at=health.observed_at if health else None,
                 observed_at_local=observed_local,
                 samples=samples,
+                framing_verified=framing_verified,
                 current_direction=item.get("current_direction"),
                 underwater_visibility=item.get("underwater_visibility"),
-                status="recorded; manual review needed",
+                status=status_label,
                 limitations=limitations,
             )
         )
     return results
 
 
-def _build_weather() -> WeatherObservation | None:
-    data = _load_json("weather")
+def _build_weather(source_dir: Path = _handoff_demo()) -> WeatherObservation | None:
+    data = _load_json("weather", source_dir)
     if not data:
         return None
 
@@ -224,17 +260,21 @@ def _build_weather() -> WeatherObservation | None:
     )
 
 
-def _build_algae(base: str) -> AlgaeObservation | None:
-    data = _load_json("sargassum")
+def _build_algae(
+    base: str,
+    source_dir: Path = _handoff_demo(),
+    image_prefix: str = "fixtures",
+) -> AlgaeObservation | None:
+    data = _load_json("sargassum", source_dir)
     if not data:
         return None
 
     regions = []
     for name, region in data.get("regions", {}).items():
         image_url = None
-        png = _handoff_demo() / "sargassum" / f"{name}.png"
+        png = source_dir / "sargassum" / f"{name}.png"
         if png.exists():
-            image_url = f"{base}/fixtures/sargassum/{name}.png"
+            image_url = f"{base}/{image_prefix}/sargassum/{name}.png"
 
         regions.append(
             AlgaeRegion(
@@ -301,11 +341,177 @@ def _build_motion(base: str) -> SurfaceMotionObservation | None:
     )
 
 
-@router.get("/snorkel-conditions", response_model=SnorkelConditionsResponse)
-async def get_snorkel_conditions(request: Request) -> SnorkelConditionsResponse:
-    base = _base_url(request)
-    now = datetime.now(timezone.utc)
+def _run_poc(script: str, args: list[str], timeout: int) -> tuple[bool, str]:
+    """Run a single PoC script and return (ok, error_or_log_tail)."""
+    cmd = [sys.executable, str(Path(settings.poc_handoff_dir) / script), *args]
+    logger.info("Running %s", " ".join(cmd))
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return False, f"{script} timed out after {timeout}s"
+    if r.returncode != 0:
+        tail = (r.stdout + "\n" + r.stderr).strip().splitlines()[-10:]
+        return False, f"{script} failed: {'; '.join(tail) or 'non-zero exit'}"
+    return True, r.stdout.strip().splitlines()[-1] if r.stdout else "ok"
 
+
+def _discover_latest_sargassum(live_dir: Path, max_lookback: int = 5) -> tuple[bool, str]:
+    """Try today, then the previous days, for the most recent valid 7-day composite."""
+    today = date.today()
+    for i in range(max_lookback):
+        day = today - timedelta(days=i)
+        out = live_dir / "sargassum_search" / day.isoformat()
+        out.mkdir(parents=True, exist_ok=True)
+        ok, _ = _run_poc(
+            "floating_sargassum_card_poc.py",
+            ["--date", day.isoformat(), "--period", "7DAY", "--output", str(out)],
+            timeout=90,
+        )
+        if ok:
+            # Make the successful result available at a stable path.
+            target = live_dir / "sargassum"
+            if target.exists():
+                shutil.rmtree(target)
+            shutil.copytree(out, target)
+            return True, f"USF composite ending {day.isoformat()}"
+    # If nothing worked but we have a previous cached composite, use it as a dated cache.
+    if (live_dir / "sargassum" / "result.json").exists():
+        return False, "No recent composite found; using cached result"
+    return False, f"No valid USF composite in the last {max_lookback} days"
+
+
+def _update_live_sources(live_dir: Path) -> dict[str, tuple[bool, str]]:
+    """Run the independent live PoCs and return per-source (ok, message_or_error)."""
+    live_dir.mkdir(parents=True, exist_ok=True)
+
+    camera_ok, camera_err = _run_poc(
+        "beach_camera_health_poc.py",
+        ["--output", str(live_dir / "camera"), "--fresh-minutes", "360"],
+        timeout=180,
+    )
+
+    appearance_ok, appearance_err = False, "camera not ready"
+    if camera_ok and (live_dir / "camera" / "result.json").exists():
+        appearance_ok, appearance_err = _run_poc(
+            "camera_water_appearance_poc.py",
+            ["--input", str(live_dir / "camera"), "--output", str(live_dir / "appearance")],
+            timeout=60,
+        )
+
+    weather_ok, weather_err = _run_poc(
+        "rainfall_forecast_poc.py",
+        [
+            "--output",
+            str(live_dir / "weather"),
+            "--latitude",
+            str(settings.inlet_lat),
+            "--longitude",
+            str(settings.inlet_lon),
+        ],
+        timeout=90,
+    )
+
+    sargassum_ok, sargassum_err = _discover_latest_sargassum(live_dir)
+
+    return {
+        "camera": (camera_ok, camera_err),
+        "appearance": (appearance_ok, appearance_err),
+        "weather": (weather_ok, weather_err),
+        "sargassum": (sargassum_ok, sargassum_err),
+    }
+
+
+def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
+    """Assemble the live/cached conditions payload."""
+    now = datetime.now(timezone.utc)
+    live_dir = _live_dir()
+    live_dir.mkdir(parents=True, exist_ok=True)
+
+    source_status = _update_live_sources(live_dir)
+
+    cameras = _build_camera_health(base, live_dir, "fixtures/live")
+    if not source_status["camera"][0]:
+        for cam in cameras:
+            cam.status = "cached"
+            cam.error = (
+                (cam.error or "") + " Live camera fetch failed: " + source_status["camera"][1]
+            ).strip()
+
+    health_by_id = {c.camera_id: c for c in cameras}
+
+    appearance: list[WaterAppearanceObservation] = []
+    if (live_dir / "appearance" / "result.json").exists():
+        appearance = _build_appearance(
+            health_by_id,
+            base,
+            source_dir=live_dir,
+            image_prefix="fixtures/live",
+            framing_verified=False,
+            status_label="framing_unverified",
+        )
+    if not source_status["appearance"][0]:
+        for a in appearance:
+            a.status = "framing_unverified"
+            a.error = (
+                (a.error or "") + " Live appearance fetch failed: " + source_status["appearance"][1]
+            ).strip()
+
+    weather = _build_weather(live_dir)
+    if weather and not source_status["weather"][0]:
+        weather.limitations.append(
+            "Live weather fetch failed; showing cached result: " + source_status["weather"][1]
+        )
+
+    algae = _build_algae(base, live_dir, "fixtures/live")
+    if algae and not source_status["sargassum"][0]:
+        algae.limitations.append(
+            "Live USF search failed; showing cached result: " + source_status["sargassum"][1]
+        )
+    if not algae and not source_status["sargassum"][0]:
+        logger.warning("Sargassum unavailable: %s", source_status["sargassum"][1])
+
+    limitations = [
+        "Image colour thresholds are exploratory.",
+        "Weather is a model estimate, not a rain gauge.",
+        "Algae is a rendered-image proxy, not biomass or beach severity.",
+        "Surface motion is experimental and developer-only.",
+        "C-16 live discharge is not measured here.",
+        "Live-mode framing is unverified; colour claims are suppressed.",
+    ]
+    for source, (ok, err) in source_status.items():
+        if not ok:
+            limitations.append(f"{source}: {err}")
+
+    return SnorkelConditionsResponse(
+        generated_at_utc=now,
+        mode="live",
+        mode_disclaimer=(
+            "Live fetch. Each source is fetched independently and carries its own "
+            "observed_at timestamp; cached results are used when a live source fails. "
+            "Camera framing is not automatically verified, so colour claims are suppressed."
+        ),
+        location=LocationInfo(lat=26.530, lon=-80.052, label="Boynton Inlet"),
+        cameras=cameras,
+        water_appearance=appearance,
+        weather=weather,
+        algae=algae,
+        c16=C16Observation(),
+        surface_motion=None,
+        limitations=limitations,
+    )
+
+
+@router.get("/snorkel-conditions", response_model=SnorkelConditionsResponse)
+async def get_snorkel_conditions(
+    request: Request,
+    mode: str = Query("recorded_replay", enum=["recorded_replay", "live"]),
+) -> SnorkelConditionsResponse:
+    base = _base_url(request)
+
+    if mode == "live":
+        return _build_live_conditions(base)
+
+    now = datetime.now(timezone.utc)
     cameras = _build_camera_health(base)
     health_by_id = {c.camera_id: c for c in cameras}
     appearance = _build_appearance(health_by_id, base)

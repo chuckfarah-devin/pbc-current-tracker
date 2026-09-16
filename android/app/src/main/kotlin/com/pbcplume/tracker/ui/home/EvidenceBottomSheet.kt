@@ -78,16 +78,15 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
             ?: health?.let { "${it.location} · ${it.view ?: it.cameraId}" }
             ?: getString(R.string.na)
 
-        val observed = SnorkelFormat.time(appearance?.observedAt ?: health?.observedAt)
-        val retrieved = SnorkelFormat.time(appearance?.fetchedAt ?: health?.fetchedAt)
-        binding.tvEvidenceObserved.text = when {
-            observed != null -> "Observed $observed · Retrieved $retrieved"
-            retrieved != null -> "Retrieved $retrieved · capture time unverified"
-            else -> getString(R.string.na)
-        }
-        binding.tvEvidenceFetched.visibility = View.GONE
+        val observed = SnorkelFormat.time(health?.observedAt ?: appearance?.observedAt)
+        val age = health?.ageMinutes
+        val provider = health?.observedAtLocal ?: appearance?.observedAtLocal
+        val retrieved = SnorkelFormat.time(health?.fetchedAt ?: appearance?.fetchedAt)
+        binding.tvEvidenceObserved.text = SnorkelFormat.cameraTime(observed, age, provider, retrieved)
 
-        binding.tvEvidenceStatus.text = SnorkelFormat.statusLabel(health?.status ?: appearance?.status)
+        val status = SnorkelFormat.statusLabel(health?.status ?: appearance?.status)
+        val ageText = SnorkelFormat.ageLabel(age)
+        binding.tvEvidenceStatus.text = if (ageText != null) "$status · $ageText" else status
 
         val sourceUrl = health?.pageUrl ?: appearance?.sourceUrl
         binding.btnSourceLink.setOnClickListener {
@@ -96,23 +95,33 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
         binding.btnSourceLink.isEnabled = sourceUrl != null
 
         binding.containerSamples.removeAllViews()
-        if (appearance?.samples.isNullOrEmpty()) {
-            val tv = TextView(requireContext())
-            tv.text = getString(R.string.na)
-            tv.setTextColor(requireContext().getColor(android.R.color.white))
-            binding.containerSamples.addView(tv)
-        } else {
-            appearance?.samples?.forEach { s ->
+        when {
+            appearance?.framingVerified != true -> {
                 val tv = TextView(requireContext())
-                tv.text = (
-                    "${s.region}: ${"%.1f".format(s.blueGreenPercent)}% blue-green, " +
-                    "${"%.1f".format(s.warmPercent)}% warm, " +
-                    "${"%.1f".format(s.otherPercent)}% other " +
-                    "· ${s.pixels} pixels"
-                    )
+                tv.text = "Framing not verified · no automated colour claim."
                 tv.setPadding(0, 4, 0, 4)
                 tv.setTextColor(requireContext().getColor(android.R.color.white))
                 binding.containerSamples.addView(tv)
+            }
+            appearance.samples.isNullOrEmpty() -> {
+                val tv = TextView(requireContext())
+                tv.text = getString(R.string.na)
+                tv.setTextColor(requireContext().getColor(android.R.color.white))
+                binding.containerSamples.addView(tv)
+            }
+            else -> {
+                appearance.samples.forEach { s ->
+                    val tv = TextView(requireContext())
+                    tv.text = (
+                        "${s.region}: ${"%.1f".format(s.blueGreenPercent)}% blue-green, " +
+                        "${"%.1f".format(s.warmPercent)}% warm, " +
+                        "${"%.1f".format(s.otherPercent)}% other " +
+                        "· ${s.pixels} pixels"
+                        )
+                    tv.setPadding(0, 4, 0, 4)
+                    tv.setTextColor(requireContext().getColor(android.R.color.white))
+                    binding.containerSamples.addView(tv)
+                }
             }
         }
 

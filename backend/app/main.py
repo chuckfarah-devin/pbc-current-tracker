@@ -54,7 +54,13 @@ app.include_router(conditions_router.router, prefix="/api", tags=["conditions"])
 app.include_router(snorkel_router.router, prefix="/api", tags=["snorkel"])
 
 # Serve recorded PoC demo assets (camera, appearance, sargassum, motion images)
-# for the replay endpoint. This is mounted only when the handoff directory exists.
+# for the replay endpoint and live-cache assets for the live endpoint.
+# Mount the more-specific live prefix first so Starlette does not shadow it.
+_live_assets = Path(settings.poc_handoff_dir) / "live-check"
+_live_assets.mkdir(parents=True, exist_ok=True)
+if _live_assets.is_dir():
+    app.mount("/fixtures/live", StaticFiles(directory=_live_assets), name="live-fixtures")
+
 _replay_assets = Path(settings.poc_handoff_dir) / settings.replay_demo_dir
 if _replay_assets.is_dir():
     app.mount("/fixtures", StaticFiles(directory=_replay_assets), name="fixtures")

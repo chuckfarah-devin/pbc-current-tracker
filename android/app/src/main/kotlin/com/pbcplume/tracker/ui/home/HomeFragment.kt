@@ -82,12 +82,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun bind(data: SnorkelConditionsResponse) {
-        // Recorded replay banner
-        if (data.mode == "recorded_replay") {
-            binding.tvModeBanner.visibility = View.VISIBLE
-            binding.tvModeBanner.text = getString(R.string.recorded_replay)
-        } else {
-            binding.tvModeBanner.visibility = View.GONE
+        // Mode banner (recorded or live)
+        binding.tvModeBanner.visibility = View.VISIBLE
+        binding.tvModeBanner.text = when (data.mode) {
+            "live" -> "Live fetch · check each observation time"
+            else -> getString(R.string.recorded_replay)
         }
 
         // Camera hero — default to Delray, otherwise the first available appearance
@@ -98,7 +97,8 @@ class HomeFragment : Fragment() {
 
         selectedCameraId = appearance?.cameraId ?: health?.cameraId
 
-        val heroImage = appearance?.imageUrl ?: health?.imageUrl
+        val framingOk = appearance?.framingVerified == true
+        val heroImage = if (framingOk) appearance?.imageUrl else health?.imageUrl
         if (heroImage != null) {
             binding.ivCameraHero.load(heroImage) {
                 crossfade(true)
@@ -107,22 +107,24 @@ class HomeFragment : Fragment() {
         } else {
             binding.ivCameraHero.setImageResource(R.drawable.ic_launcher_background)
         }
-
-        binding.tvHeroHeadline.text = appearance?.headline
-            ?: getString(R.string.loading)
+        binding.tvHeroHeadline.text = when {
+            framingOk && appearance?.headline != null -> appearance.headline
+            health != null -> "Camera view for visual review · framing not verified"
+            else -> getString(R.string.na)
+        }
         binding.tvHeroCamera.text = appearance?.let { "${it.location} · ${it.cameraId}" }
             ?: health?.let { "${it.location} · ${it.view ?: it.cameraId}" }
             ?: getString(R.string.na)
 
-        val observed = SnorkelFormat.time(appearance?.observedAt ?: health?.observedAt)
-        val retrieved = SnorkelFormat.time(appearance?.fetchedAt ?: health?.fetchedAt)
-        binding.tvHeroTime.text = when {
-            observed != null -> "Observed $observed"
-            retrieved != null -> "Retrieved $retrieved · capture time unverified"
-            else -> getString(R.string.na)
-        }
+        val observed = SnorkelFormat.time(health?.observedAt ?: appearance?.observedAt)
+        val age = health?.ageMinutes
+        val provider = health?.observedAtLocal ?: appearance?.observedAtLocal
+        val retrieved = SnorkelFormat.time(health?.fetchedAt ?: appearance?.fetchedAt)
+        binding.tvHeroTime.text = SnorkelFormat.cameraTime(observed, age, provider, retrieved)
 
-        binding.tvHeroFreshness.text = SnorkelFormat.statusLabel(health?.status ?: appearance?.status)
+        val status = SnorkelFormat.statusLabel(health?.status ?: appearance?.status)
+        val ageText = SnorkelFormat.ageLabel(age)
+        binding.tvHeroFreshness.text = if (ageText != null) "$status · $ageText" else status
 
         // Wind
         data.weather?.wind?.let { w ->

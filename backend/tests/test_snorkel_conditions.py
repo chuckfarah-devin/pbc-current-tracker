@@ -1,5 +1,6 @@
-"""Parity tests for the recorded replay /api/snorkel-conditions endpoint."""
+"""Parity tests for the /api/snorkel-conditions endpoint."""
 import unittest
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -29,6 +30,8 @@ class SnorkelConditionsTests(unittest.TestCase):
             self.assertIn("camera_id", cam)
             self.assertIn("location", cam)
             self.assertIn("status", cam)
+            self.assertIn("age_minutes", cam)
+            self.assertIn("local_conditions_verified", cam)
 
     def test_fixture_images_are_served(self):
         r = self.client.get("/api/snorkel-conditions")
@@ -39,6 +42,31 @@ class SnorkelConditionsTests(unittest.TestCase):
             img = self.client.get(url)
             self.assertEqual(img.status_code, 200, f"Image not reachable: {url}")
             self.assertTrue(img.headers.get("content-type", "").startswith("image/"))
+
+    def test_recorded_water_appearance_is_framing_verified(self):
+        r = self.client.get("/api/snorkel-conditions")
+        data = r.json()
+        for a in data["water_appearance"]:
+            self.assertTrue(a["framing_verified"])
+
+    def test_live_mode_is_reachable_without_fetching(self):
+        """Live endpoint should be reachable when live-cache already exists."""
+        with patch(
+            "app.routers.snorkel_conditions._update_live_sources",
+            return_value={
+                "camera": (True, ""),
+                "appearance": (True, ""),
+                "weather": (True, ""),
+                "sargassum": (True, ""),
+            },
+        ):
+            r = self.client.get("/api/snorkel-conditions?mode=live")
+            self.assertEqual(r.status_code, 200)
+            data = r.json()
+            self.assertEqual(data["mode"], "live")
+            self.assertTrue(data["cameras"])
+            for a in data["water_appearance"]:
+                self.assertFalse(a["framing_verified"])
 
 
 if __name__ == "__main__":

@@ -22,6 +22,8 @@ class CameraHealthObservation(BaseModel):
     observed_at: Optional[datetime] = None
     observed_at_local: Optional[str] = None
     freshness: Optional[str] = None
+    age_minutes: Optional[float] = None
+    local_conditions_verified: bool = False
     status: str
     error: Optional[str] = None
     visual_flags: list[str] = []
@@ -52,6 +54,7 @@ class WaterAppearanceObservation(BaseModel):
     observed_at: Optional[datetime] = None
     observed_at_local: Optional[str] = None
     samples: list[WaterColourSample] = []
+    framing_verified: bool = False
     current_direction: Optional[str] = None
     underwater_visibility: Optional[str] = None
     status: str
