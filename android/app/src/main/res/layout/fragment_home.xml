@@ -10,20 +10,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:background="@drawable/bg_conditions_gradient"
         android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:background="@color/snorkel_toolbar"
+            android:padding="12dp"
+            android:clipToPadding="false">
 
             <ImageView
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/ic_wave"
+                android:src="@drawable/ic_app_logo"
                 android:contentDescription="@string/title_home"
-                app:tint="?attr/colorPrimary" />
+                app:tint="@color/snorkel_icon" />
 
             <TextView
                 android:layout_width="0dp"
@@ -41,7 +45,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/refresh_sources"
                 android:src="@drawable/ic_refresh"
-                app:tint="?attr/colorOnSurface" />
+                app:tint="@color/snorkel_icon" />
 
             <ImageButton
                 android:id="@+id/btnSettings"
@@ -50,7 +54,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/cd_settings"
                 android:src="@drawable/ic_settings"
-                app:tint="?attr/colorOnSurface" />
+                app:tint="@color/snorkel_icon" />
         </LinearLayout>
 
         <ProgressBar
@@ -74,8 +78,7 @@
             android:id="@+id/cardCameraHero"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            android:layout_marginTop="16dp"
             app:cardCornerRadius="24dp"
             app:cardElevation="4dp"
             app:strokeWidth="0dp">
@@ -128,24 +131,12 @@
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:textColor="#E0F7FA" />
 
-                    <TextView
-                        android:id="@+id/tvHeroFreshness"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:background="@drawable/bg_banner"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="2dp"
-                        android:textAppearance="?attr/textAppearanceLabelSmall"
-                        android:textColor="@color/snorkel_amber"
-                        android:visibility="gone" />
-
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSeeEvidence"
                         style="?attr/borderlessButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="4dp"
                         android:minHeight="40dp"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="4dp"
@@ -165,8 +156,9 @@
             android:layout_marginTop="12dp"
             app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="20dp"
-            app:cardElevation="2dp"
-            app:strokeWidth="0dp">
+            app:cardElevation="0dp"
+            app:strokeColor="@color/snorkel_subtle_card_outline"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -185,21 +177,21 @@
                         android:layout_height="24dp"
                         android:src="@drawable/ic_wave"
                         android:contentDescription="@null"
-                        app:tint="?attr/colorPrimary" />
+                        app:tint="@color/snorkel_icon" />
 
                     <TextView
-                        android:id="@+id/tvSurfaceFlowStatus"
+                        android:id="@+id/tvSurfaceFlowTitle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="12dp"
-                        android:textAppearance="?attr/textAppearanceHeadlineSmall"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:text="@string/surface_flow"
+                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
                         android:background="@drawable/bg_banner"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="2dp"
@@ -207,6 +199,14 @@
                         android:textAppearance="?attr/textAppearanceLabelSmall"
                         android:textColor="@color/snorkel_experimental" />
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvSurfaceFlowStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:id="@+id/tvSurfaceFlowSupport"
@@ -229,12 +229,13 @@
                     style="?attr/borderlessButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="4dp"
                     android:minHeight="40dp"
                     android:text="@string/see_evidence"
                     android:textColor="?attr/colorPrimary"
                     app:icon="@drawable/ic_link_arrow"
                     app:iconGravity="end"
+                    app:iconTint="?attr/colorPrimary"
                     android:visibility="gone" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -253,8 +254,9 @@
                 android:layout_marginEnd="6dp"
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
+                app:cardElevation="0dp"
+                app:strokeColor="@color/snorkel_subtle_card_outline"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -263,24 +265,16 @@
                     android:padding="16dp">
 
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:src="@drawable/ic_wind"
                         android:contentDescription="@null" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/wind"
-                        android:textAppearance="?attr/textAppearanceLabelLarge"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
 
                     <TextView
                         android:id="@+id/tvWindHeadline"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="8dp"
                         android:textAppearance="?attr/textAppearanceHeadlineSmall"
                         android:textColor="?attr/colorOnSurface" />
 
@@ -289,7 +283,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
                     <TextView
@@ -298,7 +292,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@color/snorkel_wind" />
+                        android:textColor="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -310,8 +304,9 @@
                 android:layout_marginStart="6dp"
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
+                app:cardElevation="0dp"
+                app:strokeColor="@color/snorkel_subtle_card_outline"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -320,26 +315,27 @@
                     android:padding="16dp">
 
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:src="@drawable/ic_rain"
                         android:contentDescription="@null" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/rain_context"
-                        android:textAppearance="?attr/textAppearanceLabelLarge"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
 
                     <TextView
                         android:id="@+id/tvRainRecent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="8dp"
                         android:textAppearance="?attr/textAppearanceHeadlineSmall"
                         android:textColor="?attr/colorOnSurface" />
+
+                    <TextView
+                        android:id="@+id/tvRainPeriod"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/rain_previous"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
 
                     <TextView
                         android:id="@+id/tvRainForward"
@@ -359,8 +355,9 @@
             android:layout_marginTop="12dp"
             app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="20dp"
-            app:cardElevation="2dp"
-            app:strokeWidth="0dp">
+            app:cardElevation="0dp"
+            app:strokeColor="@color/snorkel_subtle_card_outline"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -375,18 +372,17 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_wave"
-                        android:contentDescription="@null"
-                        app:tint="@color/snorkel_amber" />
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_seaweed"
+                        android:contentDescription="@null" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:text="@string/offshore_algae"
-                        android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textAppearance="?attr/textAppearanceTitleSmall"
                         android:textColor="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>
 
@@ -396,7 +392,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:textAppearance="?attr/textAppearanceHeadlineSmall"
-                    android:textColor="@color/snorkel_amber" />
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:id="@+id/tvAlgaePeriod"
@@ -409,7 +405,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="4dp"
                     android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
@@ -422,6 +418,7 @@
                         android:textColor="?attr/colorPrimary"
                         app:icon="@drawable/ic_link_arrow"
                         app:iconGravity="end"
+                        app:iconTint="?attr/colorPrimary"
                         android:visibility="gone" />
 
                     <com.google.android.material.button.MaterialButton
@@ -434,6 +431,7 @@
                         android:textColor="?attr/colorPrimary"
                         app:icon="@drawable/ic_link_arrow"
                         app:iconGravity="end"
+                        app:iconTint="?attr/colorPrimary"
                         android:visibility="gone" />
 
                     <com.google.android.material.button.MaterialButton
@@ -446,6 +444,7 @@
                         android:textColor="?attr/colorPrimary"
                         app:icon="@drawable/ic_link_arrow"
                         app:iconGravity="end"
+                        app:iconTint="?attr/colorPrimary"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -459,8 +458,9 @@
             android:layout_marginBottom="24dp"
             app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="20dp"
-            app:cardElevation="2dp"
-            app:strokeWidth="0dp">
+            app:cardElevation="0dp"
+            app:strokeColor="@color/snorkel_subtle_card_outline"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -486,7 +486,8 @@
                     android:text="@string/open_sfwmd"
                     android:textColor="?attr/colorPrimary"
                     app:icon="@drawable/ic_link_arrow"
-                    app:iconGravity="end" />
+                    app:iconGravity="end"
+                    app:iconTint="?attr/colorPrimary" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

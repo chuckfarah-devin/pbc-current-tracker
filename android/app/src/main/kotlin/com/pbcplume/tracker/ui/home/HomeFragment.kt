@@ -115,25 +115,20 @@ class HomeFragment : Fragment() {
         val retrieved = SnorkelFormat.time(health?.fetchedAt ?: appearance?.fetchedAt)
         binding.tvHeroTime.text = SnorkelFormat.cameraTime(observed, age, provider, retrieved)
 
-        val status = SnorkelFormat.statusLabel(health?.status ?: appearance?.status)
-        val ageText = SnorkelFormat.ageLabel(age)
-        binding.tvHeroFreshness.text = if (ageText != null) "$status · $ageText" else status
-        binding.tvHeroFreshness.visibility = if ((health?.status ?: appearance?.status) != null) View.VISIBLE else View.GONE
-
         // Wind
         data.weather?.wind?.let { w ->
             val speed = w.speedMph ?: w.speedKn?.times(1.150779448)
             val gust = w.gustMph ?: w.gustKn?.times(1.150779448)
-            val mphText = if (speed != null) "%.1f mph".format(speed) else getString(R.string.na)
             val from = w.fromCompass ?: getString(R.string.na)
-            val toward = w.towardCompass?.let { " → $it" } ?: ""
-            binding.tvWindHeadline.text = "$mphText from $from$toward"
-            binding.tvWindGusts.text = if (gust != null)
-                "Gusts %.1f mph · %s".format(gust, w.gustPeriod ?: "")
-            else
+            val toward = w.towardCompass ?: getString(R.string.na)
+            binding.tvWindHeadline.text = if (speed != null) "%.1f mph".format(speed) else getString(R.string.na)
+            binding.tvWindGusts.text = "From $from · toward $toward"
+            binding.tvWindLabel.text = if (gust != null) {
+                val period = w.gustPeriod?.let { " · $it" } ?: ""
+                "Gusts %.1f mph$period".format(gust)
+            } else {
                 getString(R.string.na)
-            binding.tvWindLabel.text = w.preferredLabel
-                ?: getString(R.string.loading)
+            }
         } ?: run {
             binding.tvWindHeadline.text = getString(R.string.na)
             binding.tvWindGusts.text = getString(R.string.na)
@@ -144,16 +139,15 @@ class HomeFragment : Fragment() {
         data.weather?.let { w ->
             val recent = w.recent24h.mm
             val forward = w.forward24h.mm
-            binding.tvRainRecent.text = if (recent != null)
-                "%.1f mm / previous 24 completed hours".format(recent)
-            else
-                getString(R.string.na)
+            binding.tvRainRecent.text = if (recent != null) "%.1f mm".format(recent) else getString(R.string.na)
+            binding.tvRainPeriod.text = getString(R.string.rain_previous)
             binding.tvRainForward.text = if (forward != null)
-                "Next 24-hour window: %.1f mm".format(forward)
+                "${getString(R.string.rain_next)} · %.1f mm".format(forward)
             else
                 getString(R.string.na)
         } ?: run {
             binding.tvRainRecent.text = getString(R.string.na)
+            binding.tvRainPeriod.text = getString(R.string.rain_previous)
             binding.tvRainForward.text = getString(R.string.na)
         }
 
@@ -171,7 +165,7 @@ class HomeFragment : Fragment() {
             val region = a.regions.find { it.name.contains("Boynton", ignoreCase = true) }
                 ?: a.regions.firstOrNull()
             val periodAge = SnorkelFormat.periodAge(a.periodEnd)
-            binding.tvAlgaeStatus.text = region?.let { SnorkelFormat.statusLabel(it.status) }
+            binding.tvAlgaeStatus.text = region?.let { SnorkelFormat.shortAlgaeStatus(it.status) }
                 ?: getString(R.string.na)
             binding.tvAlgaePeriod.text = buildString {
                 append("${a.periodStart} to ${a.periodEnd}")
@@ -191,10 +185,15 @@ class HomeFragment : Fragment() {
 
         // Surface flow (experimental)
         data.surfaceMotion?.let { m ->
-            binding.tvSurfaceFlowStatus.text = m.userLabel ?: getString(R.string.na)
-            binding.tvSurfaceFlowSupport.text = m.automatedObservation ?: m.interpretation ?: ""
+            val direction = m.userLabel?.removePrefix("Surface flow: ")?.trim() ?: getString(R.string.na)
+            binding.tvSurfaceFlowStatus.text = direction
+            binding.tvSurfaceFlowSupport.text = if (data.mode == "recorded_replay") {
+                "Recorded reference · not live."
+            } else {
+                m.automatedObservation ?: m.interpretation ?: ""
+            }
             binding.tvSurfaceFlowSupport.visibility =
-                if (m.automatedObservation.isNullOrBlank() && m.interpretation.isNullOrBlank()) View.GONE else View.VISIBLE
+                if (binding.tvSurfaceFlowSupport.text.isBlank()) View.GONE else View.VISIBLE
             val flowObserved = SnorkelFormat.time(m.observedAt)
             val flowAnalyzed = SnorkelFormat.time(m.fetchedAt)
             binding.tvSurfaceFlowTime.text = buildString {
@@ -203,7 +202,7 @@ class HomeFragment : Fragment() {
                     if (isNotEmpty()) append(" · ")
                     append("analyzed $flowAnalyzed")
                 }
-                if (isEmpty()) append(getString(R.string.na))
+                if (isEmpty()) append("Capture time unknown")
             }
             val url = m.clipUrl?.takeIf { it.isNotBlank() } ?: m.regionsImageUrl
             if (url != null) {
@@ -215,7 +214,7 @@ class HomeFragment : Fragment() {
         } ?: run {
             binding.tvSurfaceFlowStatus.text = getString(R.string.na)
             binding.tvSurfaceFlowSupport.visibility = View.GONE
-            binding.tvSurfaceFlowTime.text = getString(R.string.na)
+            binding.tvSurfaceFlowTime.text = "Capture time unknown"
             binding.btnSurfaceFlowEvidence.visibility = View.GONE
         }
 

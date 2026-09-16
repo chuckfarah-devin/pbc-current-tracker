@@ -45,7 +45,7 @@ object SnorkelFormat {
             observed != null -> "Observed $observed$ageText"
             provider != null -> "Capture shown: $provider · capture time unverified"
             retrieved != null -> "Retrieved $retrieved · capture time unverified"
-            else -> "Time unavailable"
+            else -> "Capture time unknown"
         }
     }
 
@@ -75,6 +75,13 @@ object SnorkelFormat {
             s.warmPercent >= s.otherPercent -> "mostly brown/olive"
             else -> "mixed"
         }
+    }
+
+    fun shortAlgaeStatus(status: String?): String = when (status?.uppercase()) {
+        "OFFSHORE ALGAE SIGNAL PRESENT", "IMAGE COLORS CONSISTENT WITH SARGASSUM" -> "Possible offshore signal"
+        "NO COLORED SIGNAL IDENTIFIED", "NO SARGASSUM IMAGE COLORS IDENTIFIED" -> "No offshore signal identified"
+        "INSUFFICIENT IMAGE DATA" -> "Insufficient image data"
+        else -> status ?: "Unknown"
     }
 
     fun statusLabel(status: String?): String = when (status) {
