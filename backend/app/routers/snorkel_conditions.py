@@ -341,9 +341,54 @@ def _build_motion(base: str) -> SurfaceMotionObservation | None:
     )
 
 
+def _build_surface_motion(
+    base: str,
+    source_dir: Path,
+    image_prefix: str = "fixtures",
+) -> SurfaceMotionObservation | None:
+    data = _load_json("motion", source_dir)
+    if not data:
+        return None
+
+    image_url = None
+    jpg = source_dir / "motion" / "regions.jpg"
+    if jpg.exists():
+        image_url = f"{base}/{image_prefix}/motion/regions.jpg"
+
+    observed_at = data.get("observed_at")
+    try:
+        observed_at_dt = datetime.fromisoformat(observed_at) if observed_at else None
+    except ValueError:
+        observed_at_dt = None
+
+    return SurfaceMotionObservation(
+        developer_only=True,
+        observed_at=observed_at_dt,
+        regions_image_url=image_url,
+        clip_url=data.get("source_url"),
+        user_label=data.get("user_label"),
+        automated_observation=data.get("automated_observation"),
+        interpretation=data.get(
+            "interpretation",
+            "Surface motion is experimental; no current speed or safety inference.",
+        ),
+        status=data.get("status", "unclear"),
+        limitations=[
+            "Experimental optical-flow reading, not a measured current.",
+            "Assumes fixed camera orientation matching the recorded northward reference.",
+        ],
+    )
+
+
 def _run_poc(script: str, args: list[str], timeout: int) -> tuple[bool, str]:
-    """Run a single PoC script and return (ok, error_or_log_tail)."""
-    cmd = [sys.executable, str(Path(settings.poc_handoff_dir) / script), *args]
+    """Run a single PoC script and return (ok, error_or_log_tail).
+
+    Prefer the repository-maintained copy, falling back to the handoff package.
+    """
+    repo_path = Path(settings.poc_repo_dir) / script
+    handoff_path = Path(settings.poc_handoff_dir) / script
+    script_path = repo_path if repo_path.exists() else handoff_path
+    cmd = [sys.executable, str(script_path), *args]
     logger.info("Running %s", " ".join(cmd))
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
@@ -413,11 +458,44 @@ def _update_live_sources(live_dir: Path) -> dict[str, tuple[bool, str]]:
 
     sargassum_ok, sargassum_err = _discover_latest_sargassum(live_dir)
 
+    # Surface flow from the captured Delray .ts
+    motion_ok, motion_err = False, "camera not ready"
+    delray_checked_at = None
+    delray_page_url = ""
+    if camera_ok and (live_dir / "camera" / "result.json").exists():
+        try:
+            camera_data = json.loads(
+                (live_dir / "camera" / "result.json").read_text(encoding="utf-8")
+            )
+            for cam in camera_data.get("cameras", []):
+                if cam.get("id") == "delray":
+                    delray_checked_at = cam.get("checked_at")
+                    delray_page_url = cam.get("page_url", "")
+                    break
+        except Exception:
+            pass
+    if delray_checked_at and (live_dir / "camera" / "delray_sample.ts").exists():
+        motion_ok, motion_err = _run_poc(
+            "delray_surface_flow_poc.py",
+            [
+                "--input",
+                str(live_dir / "camera" / "delray_sample.ts"),
+                "--observed-at",
+                delray_checked_at,
+                "--source-url",
+                delray_page_url,
+                "--output",
+                str(live_dir / "motion"),
+            ],
+            timeout=120,
+        )
+
     return {
         "camera": (camera_ok, camera_err),
         "appearance": (appearance_ok, appearance_err),
         "weather": (weather_ok, weather_err),
         "sargassum": (sargassum_ok, sargassum_err),
+        "motion": (motion_ok, motion_err),
     }
 
 
@@ -470,6 +548,8 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
     if not algae and not source_status["sargassum"][0]:
         logger.warning("Sargassum unavailable: %s", source_status["sargassum"][1])
 
+    surface_motion = _build_surface_motion(base, live_dir, "fixtures/live")
+
     limitations = [
         "Image colour thresholds are exploratory.",
         "Weather is a model estimate, not a rain gauge.",
@@ -496,7 +576,7 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
         weather=weather,
         algae=algae,
         c16=C16Observation(),
-        surface_motion=None,
+        surface_motion=surface_motion,
         limitations=limitations,
     )
 

@@ -31,11 +31,14 @@ class Settings(BaseSettings):
     cdse_username: str = ""        # free account: dataspace.copernicus.eu
     cdse_password: str = ""        # Sentinel-2 access
 
-    # Path to the extracted PoC handoff package for recorded-replay mode
+    # Path to the extracted PoC handoff package for recorded-replay fixtures
     poc_handoff_dir: str = (
         r"C:\Users\chuck\PBC Snorkel conditions\PBC-Snorkel-Devin-Handoff\devin-handoff"
     )
     replay_demo_dir: str = "demo"
+
+    # Path to the maintained PoCs bundled in this repository
+    poc_repo_dir: str = r"C:\Users\chuck\PBC-Current-Tracker\backend\poc"
 
 
 settings = Settings()

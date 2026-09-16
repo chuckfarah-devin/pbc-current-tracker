@@ -180,6 +180,25 @@ class HomeFragment : Fragment() {
             binding.tvAlgaePeriod.text = getString(R.string.na)
         }
 
+        // Surface flow (experimental)
+        data.surfaceMotion?.let { m ->
+            binding.tvSurfaceFlowStatus.text = m.userLabel ?: getString(R.string.na)
+            binding.tvSurfaceFlowTime.text = SnorkelFormat.time(m.observedAt)
+                ?.let { "Observed $it" }
+                ?: getString(R.string.na)
+            val url = m.clipUrl?.takeIf { it.isNotBlank() } ?: m.regionsImageUrl
+            if (url != null) {
+                binding.btnSurfaceFlowEvidence.visibility = View.VISIBLE
+                binding.btnSurfaceFlowEvidence.setOnClickListener { openSurfaceFlowEvidence(url) }
+            } else {
+                binding.btnSurfaceFlowEvidence.visibility = View.GONE
+            }
+        } ?: run {
+            binding.tvSurfaceFlowStatus.text = getString(R.string.na)
+            binding.tvSurfaceFlowTime.text = getString(R.string.na)
+            binding.btnSurfaceFlowEvidence.visibility = View.GONE
+        }
+
         // C-16
         binding.tvC16Notes.text = data.c16?.notes ?: getString(R.string.na)
     }
@@ -192,6 +211,10 @@ class HomeFragment : Fragment() {
 
     private fun openSfwmd() {
         val url = currentConditions?.c16?.infoUrl ?: "https://www.sfwmd.gov/"
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    }
+
+    private fun openSurfaceFlowEvidence(url: String) {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 

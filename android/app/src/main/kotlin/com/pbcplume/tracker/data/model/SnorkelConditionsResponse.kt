@@ -144,6 +144,7 @@ data class C16Info(
 
 data class SurfaceMotionObservation(
     @Json(name = "developer_only") val developerOnly: Boolean = true,
+    @Json(name = "observed_at") val observedAt: String?,
     @Json(name = "regions_image_url") val regionsImageUrl: String?,
     @Json(name = "clip_url") val clipUrl: String?,
     @Json(name = "user_label") val userLabel: String?,

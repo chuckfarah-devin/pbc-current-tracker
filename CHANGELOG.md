@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased] Milestone 3 — Delray surface-flow indicator and in-repo PoCs
+
+### Added
+- Copy maintained PoCs (`beach_camera_health_poc.py`, `camera_water_appearance_poc.py`, `rainfall_forecast_poc.py`, `floating_sargassum_card_poc.py`, `delray_surface_flow_poc.py`) into `backend/poc/` and add `poc_repo_dir` config.
+- `delray_surface_flow_poc.py` that analyzes a short live Delray `.ts` segment using the recorded northward clip as the reference, returning `likely northward`, `likely southward`, or `unclear`. No current speed is reported.
+- Live endpoint now runs the surface-flow PoC when a fresh Delray `.ts` segment is available.
+- `SurfaceMotionObservation.observed_at` and Android binding for the surface-flow card with direction, observation time and a `See evidence` link.
+- `tests/test_sargassum_search.py` for bounded 5-day USF selection and no-demo-fallback behavior.
+- `tests/test_surface_flow.py` sanity tests for the reference and unclear/weak-motion cases.
+
+### Changed
+- `_run_poc()` now prefers `backend/poc/` and falls back to the handoff package, so maintained scripts are versioned with the app.
+- `backend/README.md` reflects the in-repo PoCs and the new surface-flow card.
+
 ## [Unreleased] Sargassum naming and bounded composite retrieval
 
 ### Changed
