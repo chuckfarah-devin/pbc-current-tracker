@@ -203,51 +203,69 @@ class HomeFragment : Fragment() {
         }
 
         // Surface flow (experimental)
-        data.surfaceMotion?.let { m ->
-            val direction = when (m.evidenceStrength) {
-                "likely" -> "Likely ${m.direction}"
-                "possible" -> "Possible ${m.direction}"
-                "mixed" -> "Motion detected · direction mixed"
-                "none" -> "No clear directional motion"
-                else -> "Analysis unavailable"
-            }
-            binding.tvSurfaceFlowTitle.text = "Surface flow · ${m.location}"
-            binding.tvSurfaceFlowStatus.text = direction
-            binding.tvSurfaceFlowSupport.text = if (data.mode == "recorded_replay") {
-                "Recorded reference · not live."
-            } else {
-                m.automatedObservation ?: m.interpretation ?: ""
-            }
-            binding.tvSurfaceFlowSupport.visibility =
-                if (binding.tvSurfaceFlowSupport.text.isBlank()) View.GONE else View.VISIBLE
-            binding.ivSurfaceFlowArrow.setImageResource(when (m.direction) {
+        val m = data.surfaceMotion
+        val delrayHealth = data.cameras.find { it.cameraId == "delray" }
+        val fallbackCameraUrl = delrayHealth?.pageUrl ?: appearance?.sourceUrl
+        val actionUrl = m?.clipUrl ?: m?.regionsImageUrl ?: fallbackCameraUrl
+        val isActionable = !actionUrl.isNullOrBlank()
+
+        val checking = m?.status == "checking" || m?.evidenceStrength == "pending"
+        val (headline, support, arrowRes) = when {
+            m == null -> Triple(getString(R.string.surface_flow_unavailable), "", null)
+            checking -> Triple(getString(R.string.surface_flow_checking), m.interpretation, null)
+            m.evidenceStrength == "likely" -> Triple("Likely ${m.direction}", if (data.mode == "recorded_replay") "Recorded reference · not live." else m.automatedObservation ?: "", when (m.direction) {
                 "northward" -> R.drawable.ic_direction_n
                 "southward" -> R.drawable.ic_direction_s
                 else -> R.drawable.ic_direction_none
             })
+            m.evidenceStrength == "possible" -> Triple("Possible ${m.direction}", m.automatedObservation ?: "", when (m.direction) {
+                "northward" -> R.drawable.ic_direction_n
+                "southward" -> R.drawable.ic_direction_s
+                else -> R.drawable.ic_direction_none
+            })
+            m.evidenceStrength == "mixed" -> Triple("Motion detected · direction mixed", m.automatedObservation ?: "", R.drawable.ic_direction_none)
+            m.evidenceStrength == "none" -> Triple(getString(R.string.surface_flow_no_clear_motion), m.automatedObservation ?: "", R.drawable.ic_direction_none)
+            else -> Triple(getString(R.string.surface_flow_unavailable), m.reason ?: m.interpretation, R.drawable.ic_direction_none)
+        }
+
+        binding.tvSurfaceFlowTitle.text = "Surface flow · ${m?.location ?: "Delray Beach"}"
+        binding.tvSurfaceFlowStatus.text = headline
+        binding.tvSurfaceFlowSupport.text = support
+        binding.tvSurfaceFlowSupport.visibility =
+            if (support.isBlank()) View.GONE else View.VISIBLE
+        if (arrowRes != null) {
+            binding.ivSurfaceFlowArrow.setImageResource(arrowRes)
             binding.ivSurfaceFlowArrow.visibility = View.VISIBLE
-            val flowObserved = SnorkelFormat.time(m.observedAt)
-            val flowRetrieved = SnorkelFormat.time(m.retrievedAt)
-            val flowAnalyzed = SnorkelFormat.time(m.analyzedAt ?: m.fetchedAt)
-            binding.tvSurfaceFlowTime.text = buildString {
-                append(m.freshness.replaceFirstChar { it.uppercase() })
-                if (flowRetrieved != null) append(" · retrieved $flowRetrieved")
-                if (flowObserved != null) append(" · captured $flowObserved") else append(" · capture time unverified")
-                if (flowAnalyzed != null) append("\nAnalyzed $flowAnalyzed")
+        } else {
+            binding.ivSurfaceFlowArrow.visibility = View.GONE
+        }
+
+        val flowObserved = SnorkelFormat.time(m?.observedAt)
+        val flowRetrieved = SnorkelFormat.time(m?.retrievedAt)
+        val flowAnalyzed = SnorkelFormat.time(m?.analyzedAt ?: m?.fetchedAt)
+        binding.tvSurfaceFlowTime.text = buildString {
+            append((m?.freshness ?: "unknown").replaceFirstChar { it.uppercase() })
+            if (flowRetrieved != null) append(" · retrieved $flowRetrieved")
+            if (flowObserved != null) append(" · captured $flowObserved") else append(" · capture time unverified")
+            if (flowAnalyzed != null) {
+                append("\nAnalyzed $flowAnalyzed")
+            } else if (checking) {
+                append("\nAnalysis in progress…")
             }
+        }
+
+        if (isActionable) {
             binding.cardSurfaceFlow.isClickable = true
             binding.cardSurfaceFlow.isFocusable = true
             binding.ivSurfaceFlowChevron.visibility = View.VISIBLE
             binding.cardSurfaceFlow.setOnClickListener { openEvidenceSheet("delray") }
-        } ?: run {
-            binding.tvSurfaceFlowStatus.text = getString(R.string.na)
-            binding.tvSurfaceFlowSupport.visibility = View.GONE
-            binding.tvSurfaceFlowTime.text = "Capture time unknown"
-            binding.ivSurfaceFlowArrow.visibility = View.GONE
-            binding.ivSurfaceFlowChevron.visibility = View.GONE
+            binding.cardSurfaceFlow.contentDescription = getString(R.string.view_surface_flow_evidence)
+        } else {
             binding.cardSurfaceFlow.isClickable = false
             binding.cardSurfaceFlow.isFocusable = false
+            binding.ivSurfaceFlowChevron.visibility = View.GONE
             binding.cardSurfaceFlow.setOnClickListener(null)
+            binding.cardSurfaceFlow.contentDescription = null
         }
 
         // C-16

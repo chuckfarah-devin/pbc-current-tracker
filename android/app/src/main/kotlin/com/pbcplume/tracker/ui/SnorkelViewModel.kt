@@ -53,8 +53,8 @@ class SnorkelViewModel(app: Application) : AndroidViewModel(app) {
                 )
                 val running = result.getOrNull()?.refreshStatus == "running"
                 attempts++
-                if (mode == "live" && running && attempts < 90) delay(2_000)
-            } while (mode == "live" && running && attempts < 90)
+                if (mode == "live" && running && attempts < 180) delay(5_000)
+            } while (mode == "live" && running && attempts < 180)
             _isRefreshing.value = false
         }
     }

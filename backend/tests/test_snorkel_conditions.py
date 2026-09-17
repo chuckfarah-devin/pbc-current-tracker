@@ -1,5 +1,7 @@
 """Parity tests for the /api/snorkel-conditions endpoint."""
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
@@ -92,6 +94,47 @@ class SnorkelConditionsTests(unittest.TestCase):
             self.assertTrue(data["cameras"])
             for a in data["water_appearance"]:
                 self.assertFalse(a["framing_verified"])
+
+    def test_live_mode_with_empty_cache_exposes_motion_unavailable(self):
+        """An empty live cache must not return a null surface_motion object."""
+        import app.routers.snorkel_conditions as sc
+        with tempfile.TemporaryDirectory() as tmp:
+            live_dir = Path(tmp)
+            with patch.object(sc, "_live_dir", return_value=live_dir):
+                r = self.client.get("/api/snorkel-conditions?mode=live")
+                self.assertEqual(r.status_code, 200)
+                data = r.json()
+                self.assertEqual(data["mode"], "live")
+                self.assertIsNotNone(data["surface_motion"])
+                self.assertEqual(data["surface_motion"]["status"], "unable_to_assess")
+                self.assertEqual(data["surface_motion"]["evidence_strength"], "unable")
+                self.assertEqual(data["refresh_status"], "idle")
+
+    def test_live_mode_while_refresh_running_exposes_motion_checking(self):
+        """While a refresh is running, surface_motion should indicate checking."""
+        import app.routers.snorkel_conditions as sc
+        with tempfile.TemporaryDirectory() as tmp:
+            live_dir = Path(tmp)
+
+            class FakeTask:
+                def done(self):
+                    return False
+
+                def cancel(self):
+                    pass
+
+            sc._refresh_task = FakeTask()
+            try:
+                with patch.object(sc, "_live_dir", return_value=live_dir):
+                    r = self.client.get("/api/snorkel-conditions?mode=live")
+                    self.assertEqual(r.status_code, 200)
+                    data = r.json()
+                    self.assertEqual(data["refresh_status"], "running")
+                    self.assertIsNotNone(data["surface_motion"])
+                    self.assertEqual(data["surface_motion"]["status"], "checking")
+                    self.assertEqual(data["surface_motion"]["evidence_strength"], "pending")
+            finally:
+                sc._refresh_task = None
 
 
 if __name__ == "__main__":

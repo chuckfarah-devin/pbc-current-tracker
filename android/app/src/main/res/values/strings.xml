@@ -59,4 +59,9 @@
     <string name="view_surface_flow_evidence">View surface-flow evidence</string>
     <string name="camera_visual_review">Camera view for visual review</string>
     <string name="hero_appearance">Blue-green appearance.</string>
+    <string name="surface_flow_checking">Checking surface motion…</string>
+    <string name="surface_flow_unavailable">Analysis unavailable</string>
+    <string name="surface_flow_no_clear_motion">No clear directional motion</string>
+    <string name="surface_flow_pending_reason">Motion analysis is in progress…</string>
+    <string name="check_again">Pull down to check again</string>
 </resources>

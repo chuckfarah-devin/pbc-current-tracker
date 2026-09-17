@@ -155,26 +155,42 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
             binding.tvEvidenceRain.text = getString(R.string.na)
         }
 
-        data.surfaceMotion?.let { m ->
-            binding.tvEvidenceSurfaceFlow.text = when (m.evidenceStrength) {
-                "likely" -> "Likely ${m.direction}"
-                "possible" -> "Possible ${m.direction}"
-                "mixed" -> "Motion detected · direction mixed"
-                "none" -> "No clear directional motion"
-                else -> "Analysis unavailable"
+        val motion = data.surfaceMotion
+        if (motion != null) {
+            val checking = motion.status == "checking" || motion.evidenceStrength == "pending"
+            binding.tvEvidenceSurfaceFlow.text = when {
+                checking -> getString(R.string.surface_flow_checking)
+                motion.evidenceStrength == "likely" -> "Likely ${motion.direction}"
+                motion.evidenceStrength == "possible" -> "Possible ${motion.direction}"
+                motion.evidenceStrength == "mixed" -> "Motion detected · direction mixed"
+                motion.evidenceStrength == "none" -> getString(R.string.surface_flow_no_clear_motion)
+                else -> getString(R.string.surface_flow_unavailable)
             }
             binding.tvEvidenceSurfaceFlowSupport.text = buildString {
-                append("Location: ${m.location}\nFreshness: ${m.freshness}")
-                SnorkelFormat.time(m.observedAt)?.let { append("\nCaptured: $it") }
-                    ?: append("\nCapture time unverified")
-                SnorkelFormat.time(m.retrievedAt)?.let { append("\nRetrieved: $it") }
-                SnorkelFormat.time(m.analyzedAt ?: m.fetchedAt)?.let { append("\nLast analysis attempt: $it") }
-                (m.reason ?: m.automatedObservation)?.takeIf { it.isNotBlank() }?.let { append("\nReason: $it") }
+                append("Location: ${motion.location}\nStatus: ${motion.status}")
+                if (checking) {
+                    append("\n${motion.interpretation}")
+                } else {
+                    SnorkelFormat.time(motion.observedAt)?.let { append("\nCaptured: $it") }
+                        ?: append("\nCapture time unverified")
+                    SnorkelFormat.time(motion.retrievedAt)?.let { append("\nRetrieved: $it") }
+                    SnorkelFormat.time(motion.analyzedAt ?: motion.fetchedAt)?.let { append("\nLast analysis attempt: $it") }
+                        ?: append("\nLast analysis attempt: unknown")
+                    (motion.reason ?: motion.automatedObservation)?.takeIf { it.isNotBlank() }?.let { append("\nReason: $it") }
+                }
             }
             binding.tvEvidenceSurfaceFlowSupport.visibility = View.VISIBLE
-        } ?: run {
-            binding.tvEvidenceSurfaceFlow.text = getString(R.string.na)
-            binding.tvEvidenceSurfaceFlowSupport.visibility = View.GONE
+        } else {
+            // Defensive fallback: motion object should always be supplied by the backend,
+            // but if it is missing we still show an explanation and the Delray camera link.
+            val delrayUrl = data.cameras.find { it.cameraId == "delray" }?.pageUrl
+                ?: appearance?.sourceUrl
+            binding.tvEvidenceSurfaceFlow.text = getString(R.string.surface_flow_unavailable)
+            binding.tvEvidenceSurfaceFlowSupport.text = buildString {
+                append("Surface-motion analysis is unavailable.")
+                if (!delrayUrl.isNullOrBlank()) append(" Use Open camera to view the Delray source.")
+            }
+            binding.tvEvidenceSurfaceFlowSupport.visibility = View.VISIBLE
         }
 
         fun setLinkButton(btn: android.view.View, url: String?) {

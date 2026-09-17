@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] PR review — null motion state and extended refresh polling
+
+### Changed
+- Backend `_build_live_conditions` now returns an explicit `SurfaceMotionObservation` for every live response instead of `null`.
+- When a refresh is running, surface flow reports `status: "checking"`, `evidence_strength: "pending"`, and the reason "Motion analysis is in progress...".
+- When no motion result exists and no refresh is running, surface flow reports `status: "unable_to_assess"`, `evidence_strength: "unable"`, and the actual reason (e.g., `not yet refreshed`).
+- Missing analysis timestamps remain unknown; placeholders no longer inherit `last_refresh_completed`.
+- Android `HomeFragment` keeps the surface-flow tile actionable in `checking`/`unavailable`/`null` states, shows a clear headline and progress text, and hides the chevron only when no camera/evidence action exists.
+- Android `EvidenceBottomSheet` handles null, `checking`, and `unable` motion states, preserves the Delray camera link, and distinguishes inconclusive completed analysis from unavailable analysis.
+- Android refresh polling extended to 180 attempts × 5 s (15 min) so longer surface-flow analysis can complete without the UI stopping prematurely.
+
 ## [Unreleased] PR review — responsive refresh and graded surface motion
 
 ### Changed

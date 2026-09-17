@@ -397,6 +397,59 @@ def _build_surface_motion(
     )
 
 
+def _build_surface_motion_placeholder(
+    refresh_running: bool,
+    source_status_motion: tuple[bool, str],
+    cameras: list[CameraHealthObservation],
+) -> SurfaceMotionObservation:
+    """Return a motion observation when no live result file has been published yet.
+
+    Keeps the tile actionable on Android by always supplying a clip_url when a
+    Delray camera link is available.
+    """
+    delray_page = next((c.page_url for c in cameras if c.camera_id == "delray"), None)
+    delray_source = next((c.source_url for c in cameras if c.camera_id == "delray"), None)
+    clip_url = delray_page or delray_source
+
+    base_limitations = [
+        "Experimental optical-flow reading, not a measured current.",
+        "Direction thresholds are provisional and calibrated from one northward reference.",
+    ]
+
+    if refresh_running:
+        return SurfaceMotionObservation(
+            developer_only=True,
+            location="Delray Beach",
+            clip_url=clip_url,
+            direction="unknown",
+            evidence_strength="pending",
+            freshness="pending",
+            status="checking",
+            reason="Motion analysis is in progress...",
+            interpretation="Surface-motion analysis is currently running. Results will appear when the Delray clip has been downloaded, decoded, and analyzed.",
+            limitations=base_limitations,
+        )
+
+    if source_status_motion[0]:
+        # A refresh completed and reported motion success, yet no result file exists.
+        reason = "Motion analysis completed but did not produce a result."
+    else:
+        reason = source_status_motion[1] or "No live Delray motion analysis is available."
+
+    return SurfaceMotionObservation(
+        developer_only=True,
+        location="Delray Beach",
+        clip_url=clip_url,
+        direction="unknown",
+        evidence_strength="unable",
+        freshness="unavailable",
+        status="unable_to_assess",
+        reason=reason,
+        interpretation="Surface-motion analysis was unavailable. No direction or current speed is inferred.",
+        limitations=base_limitations + [f"Experimental surface-motion source unavailable: {reason}"],
+    )
+
+
 def _run_poc(script: str, args: list[str], timeout: int) -> tuple[bool, str]:
     """Run a single PoC script and return (ok, error_or_log_tail).
 
@@ -565,7 +618,7 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
     now = datetime.now(timezone.utc)
     live_dir = _live_dir()
     live_dir.mkdir(parents=True, exist_ok=True)
-    source_status = {name: (True, "last published result") for name in ("camera", "appearance", "weather", "sargassum", "motion")}
+    source_status = {name: (False, "not yet refreshed") for name in ("camera", "appearance", "weather", "sargassum", "motion")}
     last_refresh_completed = None
     try:
         published_status = json.loads((live_dir / "refresh_status.json").read_text(encoding="utf-8"))
@@ -573,6 +626,8 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
         last_refresh_completed = _parse_dt(published_status.get("completed_at"))
     except (OSError, ValueError, TypeError, IndexError):
         pass
+
+    refresh_running = _refresh_task is not None and not _refresh_task.done()
 
     cameras = _build_camera_health(base, live_dir, "fixtures/live")
     if not source_status["camera"][0]:
@@ -619,18 +674,9 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
     if surface_motion and not source_status["motion"][0]:
         surface_motion.freshness = "cached"
         surface_motion.limitations.append("Current Delray analysis failed; showing the previous result with its original timestamps: " + source_status["motion"][1])
-    elif not surface_motion and not source_status["motion"][0]:
-        surface_motion = SurfaceMotionObservation(
-            location="Delray Beach",
-            analyzed_at=last_refresh_completed,
-            fetched_at=last_refresh_completed,
-            direction="unknown",
-            evidence_strength="unable",
-            freshness="unavailable",
-            reason=source_status["motion"][1],
-            status="unable_to_assess",
-            interpretation="Surface-motion analysis was unavailable. No direction or current speed is inferred.",
-            limitations=["Experimental surface-motion source unavailable: " + source_status["motion"][1]],
+    elif not surface_motion:
+        surface_motion = _build_surface_motion_placeholder(
+            refresh_running, source_status["motion"], cameras
         )
 
     limitations = [
