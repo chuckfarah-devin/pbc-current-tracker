@@ -209,7 +209,7 @@ class HomeFragment : Fragment() {
                 "possible" -> "Possible ${m.direction}"
                 "mixed" -> "Motion detected · direction mixed"
                 "none" -> "No clear directional motion"
-                else -> "Unable to assess"
+                else -> "Analysis unavailable"
             }
             binding.tvSurfaceFlowTitle.text = "Surface flow · ${m.location}"
             binding.tvSurfaceFlowStatus.text = direction
@@ -235,17 +235,18 @@ class HomeFragment : Fragment() {
                 if (flowObserved != null) append(" · captured $flowObserved") else append(" · capture time unverified")
                 if (flowAnalyzed != null) append("\nAnalyzed $flowAnalyzed")
             }
-            val url = m.clipUrl?.takeIf { it.isNotBlank() } ?: m.regionsImageUrl
-            if (url != null) {
-                binding.cardSurfaceFlow.setOnClickListener { openSurfaceFlowEvidence(url) }
-            } else {
-                binding.cardSurfaceFlow.setOnClickListener(null)
-            }
+            binding.cardSurfaceFlow.isClickable = true
+            binding.cardSurfaceFlow.isFocusable = true
+            binding.ivSurfaceFlowChevron.visibility = View.VISIBLE
+            binding.cardSurfaceFlow.setOnClickListener { openEvidenceSheet("delray") }
         } ?: run {
             binding.tvSurfaceFlowStatus.text = getString(R.string.na)
             binding.tvSurfaceFlowSupport.visibility = View.GONE
             binding.tvSurfaceFlowTime.text = "Capture time unknown"
             binding.ivSurfaceFlowArrow.visibility = View.GONE
+            binding.ivSurfaceFlowChevron.visibility = View.GONE
+            binding.cardSurfaceFlow.isClickable = false
+            binding.cardSurfaceFlow.isFocusable = false
             binding.cardSurfaceFlow.setOnClickListener(null)
         }
 
@@ -253,9 +254,8 @@ class HomeFragment : Fragment() {
         binding.tvC16Notes.text = data.c16?.notes ?: getString(R.string.na)
     }
 
-    private fun openEvidenceSheet() {
-        val cameraId = selectedCameraId ?: return
-        EvidenceBottomSheet.newInstance(cameraId)
+    private fun openEvidenceSheet(cameraId: String? = selectedCameraId) {
+        EvidenceBottomSheet.newInstance(cameraId ?: "delray")
             .show(childFragmentManager, EvidenceBottomSheet.TAG)
     }
 
@@ -268,9 +268,6 @@ class HomeFragment : Fragment() {
         openUrl(url)
     }
 
-    private fun openSurfaceFlowEvidence(url: String) {
-        openUrl(url)
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

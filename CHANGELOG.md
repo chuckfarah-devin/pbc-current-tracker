@@ -10,6 +10,7 @@
 - Return cached conditions immediately while a deduplicated background refresh runs; publish source files atomically.
 - Render surface-motion labels from structured fields, identify Delray, show freshness separately, restore actual appearance headlines, and include weather times/failure limitations in evidence.
 - Declare Requests, NumPy, Pillow, OpenCV, and timezone dependencies; use `POC_HANDOFF_DIR` for portable replay configuration.
+- Make every available/unavailable surface-flow result open its evidence explanation with reason, last analysis attempt, and camera link; hide the chevron when no evidence action exists, and distinguish inconclusive completed analysis from unavailable analysis.
 
 ## [Unreleased] UI visual redesign
 

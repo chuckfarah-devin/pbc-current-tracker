@@ -566,9 +566,11 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
     live_dir = _live_dir()
     live_dir.mkdir(parents=True, exist_ok=True)
     source_status = {name: (True, "last published result") for name in ("camera", "appearance", "weather", "sargassum", "motion")}
+    last_refresh_completed = None
     try:
         published_status = json.loads((live_dir / "refresh_status.json").read_text(encoding="utf-8"))
         source_status.update({name: (bool(value[0]), str(value[1])) for name, value in published_status.get("sources", {}).items()})
+        last_refresh_completed = _parse_dt(published_status.get("completed_at"))
     except (OSError, ValueError, TypeError, IndexError):
         pass
 
@@ -617,6 +619,19 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
     if surface_motion and not source_status["motion"][0]:
         surface_motion.freshness = "cached"
         surface_motion.limitations.append("Current Delray analysis failed; showing the previous result with its original timestamps: " + source_status["motion"][1])
+    elif not surface_motion and not source_status["motion"][0]:
+        surface_motion = SurfaceMotionObservation(
+            location="Delray Beach",
+            analyzed_at=last_refresh_completed,
+            fetched_at=last_refresh_completed,
+            direction="unknown",
+            evidence_strength="unable",
+            freshness="unavailable",
+            reason=source_status["motion"][1],
+            status="unable_to_assess",
+            interpretation="Surface-motion analysis was unavailable. No direction or current speed is inferred.",
+            limitations=["Experimental surface-motion source unavailable: " + source_status["motion"][1]],
+        )
 
     limitations = [
         "Image colour thresholds are exploratory.",

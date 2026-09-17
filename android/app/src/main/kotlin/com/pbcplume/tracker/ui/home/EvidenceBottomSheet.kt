@@ -156,10 +156,22 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
         }
 
         data.surfaceMotion?.let { m ->
-            binding.tvEvidenceSurfaceFlow.text = m.userLabel ?: getString(R.string.na)
-            binding.tvEvidenceSurfaceFlowSupport.text = m.automatedObservation ?: m.interpretation ?: ""
-            binding.tvEvidenceSurfaceFlowSupport.visibility =
-                if (m.automatedObservation.isNullOrBlank() && m.interpretation.isNullOrBlank()) View.GONE else View.VISIBLE
+            binding.tvEvidenceSurfaceFlow.text = when (m.evidenceStrength) {
+                "likely" -> "Likely ${m.direction}"
+                "possible" -> "Possible ${m.direction}"
+                "mixed" -> "Motion detected · direction mixed"
+                "none" -> "No clear directional motion"
+                else -> "Analysis unavailable"
+            }
+            binding.tvEvidenceSurfaceFlowSupport.text = buildString {
+                append("Location: ${m.location}\nFreshness: ${m.freshness}")
+                SnorkelFormat.time(m.observedAt)?.let { append("\nCaptured: $it") }
+                    ?: append("\nCapture time unverified")
+                SnorkelFormat.time(m.retrievedAt)?.let { append("\nRetrieved: $it") }
+                SnorkelFormat.time(m.analyzedAt ?: m.fetchedAt)?.let { append("\nLast analysis attempt: $it") }
+                (m.reason ?: m.automatedObservation)?.takeIf { it.isNotBlank() }?.let { append("\nReason: $it") }
+            }
+            binding.tvEvidenceSurfaceFlowSupport.visibility = View.VISIBLE
         } ?: run {
             binding.tvEvidenceSurfaceFlow.text = getString(R.string.na)
             binding.tvEvidenceSurfaceFlowSupport.visibility = View.GONE
