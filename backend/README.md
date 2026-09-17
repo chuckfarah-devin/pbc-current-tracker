@@ -27,6 +27,19 @@ Interactive API docs: **http://localhost:8000/docs**
 ### `GET /api/status`
 System health and last-update timestamps for each data source.
 
+### `GET /api/snorkel-conditions?mode=recorded_replay|live`
+Combined snorkel-conditions snapshot. Default `mode` is `recorded_replay`.
+
+**`recorded_replay`**: static demo from the devin-handoff PoCs; each source keeps its own `observed_at`.
+
+**`live`**: fetches each source independently from the repository-maintained PoCs in `backend/poc/`, retaining cached results when a source fails and never substituting the recorded demo:
+- **cameras** — source health, timestamps, provenance, `age_minutes` and status
+- **water_appearance** — shown for visual review only; colour samples suppressed until framing is verified
+- **weather** — Open-Meteo wind (FROM direction) and 24-hour rain windows
+- **sargassum** — USF FA/FAD rendered-image color proxy; exact 7-day composite period from a bounded search
+- **c16** — SFWMD information link (live discharge not measured)
+- **surface_flow** — experimental Delray optical-flow indicator: likely northward, likely southward, or unclear; no current speed
+
 ### `GET /api/conditions?lat={lat}&lon={lon}`
 Full conditions snapshot:
 - **current** — speed/direction (NOAA CO-OPS, tidal proxy fallback)
@@ -70,10 +83,12 @@ backend/
 │   ├── main.py          # FastAPI app, CORS, lifespan
 │   ├── config.py        # Settings (pydantic-settings)
 │   ├── models/
-│   │   └── conditions.py  # Pydantic response models
+│   │   ├── conditions.py        # Pydantic response models for /api/conditions
+│   │   └── snorkel_conditions.py # Pydantic models for /api/snorkel-conditions
 │   ├── routers/
-│   │   ├── status.py      # GET /api/status
-│   │   └── conditions.py  # GET /api/conditions
+│   │   ├── status.py            # GET /api/status
+│   │   ├── conditions.py        # GET /api/conditions
+│   │   └── snorkel_conditions.py # GET /api/snorkel-conditions
 │   └── services/
 │       ├── cache.py         # In-process TTL cache
 │       ├── noaa_currents.py # NOAA CO-OPS client

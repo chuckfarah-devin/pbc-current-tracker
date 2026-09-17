@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.PBCPlume" parent="Theme.Material3.Light.NoActionBar">
+    <style name="Theme.PBCPlume" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_on_primary</item>
         <item name="colorPrimaryContainer">@color/md_theme_primary_container</item>
@@ -16,6 +16,6 @@
         <item name="colorError">@color/md_theme_error</item>
         <item name="colorOnError">@color/md_theme_on_error</item>
         <item name="android:statusBarColor">@color/md_theme_background</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

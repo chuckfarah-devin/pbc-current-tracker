@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Branded dark snorkel palette — matches the design board tokens -->
+    <color name="snorkel_screen_background">#041B29</color>
+    <color name="snorkel_toolbar">#06283D</color>
+    <color name="snorkel_main_card_surface">#0B3046</color>
+    <color name="snorkel_raised_card_surface">#123E54</color>
+    <color name="snorkel_subtle_card_outline">#28566C</color>
+    <color name="snorkel_primary_text">#F0F8FC</color>
+    <color name="snorkel_secondary_text">#AAC4D3</color>
+    <color name="snorkel_icon">#64DDED</color>
+    <color name="snorkel_experimental">#9DB4C0</color>
+    <color name="snorkel_amber">#FFB74D</color>
+    <color name="snorkel_error">#FF9E9E</color>
+    <color name="snorkel_wind">#64DDED</color>
+    <color name="snorkel_rain">#64DDED</color>
+
+    <!-- Material attribute backing -->
+    <color name="md_theme_primary">#64DDED</color>
+    <color name="md_theme_on_primary">#041B29</color>
+    <color name="md_theme_primary_container">#123E54</color>
+    <color name="md_theme_on_primary_container">#F0F8FC</color>
+    <color name="md_theme_secondary">#64DDED</color>
+    <color name="md_theme_background">#041B29</color>
+    <color name="md_theme_surface">#0B3046</color>
+    <color name="md_theme_on_surface">#F0F8FC</color>
+    <color name="md_theme_surface_variant">#123E54</color>
+    <color name="md_theme_on_surface_variant">#AAC4D3</color>
+    <color name="md_theme_error">#FF9E9E</color>
+    <color name="md_theme_on_error">#041B29</color>
+    <color name="md_theme_outline">#28566C</color>
+    <color name="md_theme_outline_variant">#28566C</color>
+
+    <!-- Legacy map screen colors -->
+    <color name="score_excellent">#2E7D32</color>
+    <color name="score_good">#558B2F</color>
+    <color name="score_fair">#F9A825</color>
+    <color name="score_marginal">#E65100</color>
+    <color name="score_poor">#B71C1C</color>
+    <color name="badge_unknown">#78909C</color>
+    <color name="current_arrow">#64DDED</color>
+    <color name="handle_color">#28566C</color>
+</resources>

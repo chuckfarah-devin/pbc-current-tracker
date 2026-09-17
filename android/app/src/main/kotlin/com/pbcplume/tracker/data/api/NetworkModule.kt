@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 object NetworkModule {
 
-    fun buildApiService(baseUrl: String): PlumeApiService {
+    private fun buildRetrofit(baseUrl: String): Retrofit {
         val normalised = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
 
         val logging = HttpLoggingInterceptor { msg -> Timber.tag("OkHttp").d(msg) }.apply {
@@ -20,7 +20,7 @@ object NetworkModule {
         val client = OkHttpClient.Builder()
             .addInterceptor(logging)
             .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(180, TimeUnit.SECONDS)
             .build()
 
         val moshi = Moshi.Builder()
@@ -32,6 +32,11 @@ object NetworkModule {
             .client(client)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
-            .create(PlumeApiService::class.java)
     }
+
+    fun buildApiService(baseUrl: String): PlumeApiService =
+        buildRetrofit(baseUrl).create(PlumeApiService::class.java)
+
+    fun buildSnorkelApiService(baseUrl: String): SnorkelApiService =
+        buildRetrofit(baseUrl).create(SnorkelApiService::class.java)
 }

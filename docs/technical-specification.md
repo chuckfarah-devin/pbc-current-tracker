@@ -219,7 +219,22 @@ TTL = 1800 s (30 min). Key: conditions_{lat:.2f}_{lon:.2f}. Configurable via CAC
 
 ---
 
+### 3.8 Experimental Delray surface motion
+
+Live surface-motion analysis is tied to one successfully downloaded and decoded Delray acquisition by a SHA-256 acquisition ID. Capture time (when source-verified), retrieval time, and analysis time are independent. Missing capture time remains unknown. A failed acquisition may retain a prior result only as `cached` with its original timestamps.
+
+The live acquisition targets 20–30 seconds by combining consecutive HLS transport-stream segments. Analysis follows features through intermediate frames, compares timestamp-based intervals near 0.2, 0.5, 1, and 2 seconds, normalizes displacement for elapsed time and image width, and requires consistent drift across separate windows. Textured patches may abstain independently. Stationary structures estimate small camera motion for compensation; pans, zooms, cuts, discontinuities, duplicate/short footage, and framing changes produce `unable_to_assess`.
+
+The response exposes structured `direction`, `evidence_strength`, `freshness`, and `reason` fields. `likely` and `possible` agreement percentages are provisional tuning thresholds—not accuracy claims. Geographic north/south labels require verified reference orientation; otherwise the system reports image-left/image-right motion. The feature reports neither current speed nor safety.
+
+Live refresh work runs outside the request handler. Requests return the latest atomically published source results and refresh progress promptly, while one deduplicated background job updates independent sources.
+
 ## 4. Android App
+
+### UI design companion
+
+The [UI/UX Design Specification v1.0](ui-ux-design-specification.md) defines the visual system, screen layouts, interactions, accessibility, error states and phased Android implementation plan. Use its [concept board](assets/palm-beach-plume-tracker-concept.png) as the visual target. Implement after the current device-launch milestone, preserving the Kotlin/XML/MVVM scaffold. Section 12 records differences between this technical document, the concept and the current code; do not change scientific calculations merely to match the artwork. Display current and clarity resolutions separately.
+
 
 ### 4.1 Stack
 
