@@ -118,12 +118,20 @@ def playlist(url, depth=0):
             if not child: raise ValueError('Missing HLS variant URL')
             return playlist(urljoin(url,child),depth+1)
     sequence=re.search(r'#EXT-X-MEDIA-SEQUENCE:(\d+)',text)
-    segments=[urljoin(url,x) for x in lines if not x.startswith('#')]
+    segments=[]; duration=None; program_time=None
+    for line in lines:
+        if line.startswith('#EXTINF:'):
+            try: duration=float(line.split(':',1)[1].split(',',1)[0])
+            except ValueError: duration=None
+        elif line.startswith('#EXT-X-PROGRAM-DATE-TIME:'): program_time=line.split(':',1)[1]
+        elif not line.startswith('#'):
+            segments.append({'url':urljoin(url,line),'duration':duration,'program_date_time':program_time})
+            duration=None; program_time=None
     if not segments: raise ValueError('No HLS media segments')
     # A manifest with ENDLIST is not an ongoing live stream.
     return {'url':url,'sequence':int(sequence.group(1)) if sequence else None,
-            'last_segment':segments[-1],'ended':'#EXT-X-ENDLIST' in text,
-            'program_date_time_present':'#EXT-X-PROGRAM-DATE-TIME' in text}
+            'segments':segments,'last_segment':segments[-1]['url'],'ended':'#EXT-X-ENDLIST' in text,
+            'program_date_time_present':any(s['program_date_time'] for s in segments)}
 
 
 def advancing(first,second):
@@ -144,15 +152,27 @@ def delray(output,previous,delay):
             'capture_utc':None,'capture_time_basis':'Not verified; HLS delivery progression is not a capture timestamp'}
     try:
         first=playlist(DELRAY); time.sleep(delay); second=playlist(DELRAY)
-        result.update(first_playlist=first,second_playlist=second,playlist_advancing=advancing(first,second))
-        segment=output/'delray_sample.ts'
-        segment.write_bytes(get(second['last_segment']).content)
-        target=output/'delray.png'
-        decode_segment(segment,target)
+        is_advancing=advancing(first,second)
+        if not is_advancing: raise ValueError('Delray playlist did not advance during this acquisition')
+        selected=[]; total=0.0
+        for item in reversed(second['segments']):
+            selected.insert(0,item); total += item.get('duration') or 0.0
+            if total >= 25.0: break
+        if total < 20.0: raise ValueError(f'Only {total:.1f}s of Delray footage available; need at least 20s')
+        payload=b''.join(get(item['url']).content for item in selected)
+        if not payload: raise ValueError('Downloaded Delray clip is empty')
+        acquisition_id=hashlib.sha256(payload).hexdigest()
+        segment=output/'delray_sample.ts'; temporary=output/'delray_sample.ts.tmp'
+        temporary.write_bytes(payload); temporary.replace(segment)
+        target=output/'delray.png'; decode_segment(segment,target)
+        result.update(first_playlist=first,second_playlist=second,playlist_advancing=True,
+                      acquisition_id=acquisition_id,clip_sha256=acquisition_id,
+                      clip_file=segment.name,clip_duration_seconds=total,
+                      segment_urls=[item['url'] for item in selected],
+                      segment_count=len(selected),retrieved_at=utcnow().isoformat())
         result.update(inspect_frame(target.read_bytes(),target,previous.get('delray')))
-        result['status']='stream_advancing_capture_unverified' if result['playlist_advancing'] else 'stream_not_advancing_in_short_check'
-        result['local_conditions_verified']=False
-    except Exception as exc: result.update(status='unavailable',error=str(exc))
+        result['status']='stream_advancing_capture_unverified'; result['local_conditions_verified']=False
+    except Exception as exc: result.update(status='unavailable',error=str(exc),acquisition_id=None)
     return [result]
 
 

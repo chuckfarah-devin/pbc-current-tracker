@@ -1,6 +1,6 @@
 """Parity tests for the /api/snorkel-conditions endpoint."""
 import unittest
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -69,17 +69,22 @@ class SnorkelConditionsTests(unittest.TestCase):
             any("Sargassum" in lim for lim in data["limitations"])
         )
 
+    def test_appearance_failure_field_is_supported_without_affecting_other_sources(self):
+        from app.models.snorkel_conditions import WaterAppearanceObservation
+        appearance = WaterAppearanceObservation(
+            camera_id="delray", location="Delray Beach", headline="Visual review only",
+            status="framing_unverified", error="decode failed",
+        )
+        self.assertEqual(appearance.error, "decode failed")
+        replay = self.client.get("/api/snorkel-conditions").json()
+        self.assertTrue(replay["cameras"])
+        self.assertTrue(replay["weather"])
+        self.assertTrue(replay["algae"])
+        self.assertTrue(replay["surface_motion"])
+
     def test_live_mode_is_reachable_without_fetching(self):
         """Live endpoint should be reachable when live-cache already exists."""
-        with patch(
-            "app.routers.snorkel_conditions._update_live_sources",
-            return_value={
-                "camera": (True, ""),
-                "appearance": (True, ""),
-                "weather": (True, ""),
-                "sargassum": (True, ""),
-            },
-        ):
+        with patch("app.routers.snorkel_conditions._start_refresh", new_callable=AsyncMock):
             r = self.client.get("/api/snorkel-conditions?mode=live")
             self.assertEqual(r.status_code, 200)
             data = r.json()

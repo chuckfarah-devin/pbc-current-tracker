@@ -8,6 +8,7 @@ interface SnorkelApiService {
 
     @GET("api/snorkel-conditions")
     suspend fun getSnorkelConditions(
-        @Query("mode") mode: String? = null
+        @Query("mode") mode: String? = null,
+        @Query("refresh") refresh: Boolean = false
     ): SnorkelConditionsResponse
 }

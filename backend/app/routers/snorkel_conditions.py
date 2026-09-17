@@ -1,6 +1,9 @@
 """GET /api/snorkel-conditions — recorded replay or live fetch from the devin-handoff PoCs."""
 from __future__ import annotations
 
+import asyncio
+import concurrent.futures
+import hashlib
 import json
 import logging
 import shutil
@@ -30,6 +33,8 @@ from app.models.snorkel_conditions import (
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+_refresh_task: asyncio.Task | None = None
+_refresh_started_at: datetime | None = None
 
 
 def _handoff_demo() -> Path:
@@ -326,6 +331,11 @@ def _build_motion(base: str) -> SurfaceMotionObservation | None:
 
     return SurfaceMotionObservation(
         developer_only=True,
+        location="Delray Beach",
+        direction="northward",
+        evidence_strength="likely",
+        freshness="recorded",
+        orientation_verified=True,
         regions_image_url=image_url,
         clip_url=None,
         user_label="Likely northward · recorded reference, not live",
@@ -357,33 +367,32 @@ def _build_surface_motion(
     if jpg.exists():
         image_url = f"{base}/{image_prefix}/motion/regions.jpg"
 
-    observed_at = data.get("observed_at")
-    fetched_at = data.get("classified_at_utc")
-    try:
-        observed_at_dt = datetime.fromisoformat(observed_at) if observed_at else None
-    except ValueError:
-        observed_at_dt = None
-    try:
-        fetched_at_dt = datetime.fromisoformat(fetched_at) if fetched_at else None
-    except ValueError:
-        fetched_at_dt = None
+    observed_at_dt = _parse_dt(data.get("observed_at"))
+    retrieved_at_dt = _parse_dt(data.get("retrieved_at"))
+    analyzed_at_dt = _parse_dt(data.get("analyzed_at") or data.get("classified_at_utc"))
 
     return SurfaceMotionObservation(
         developer_only=True,
+        location="Delray Beach",
+        acquisition_id=data.get("acquisition_id"),
         observed_at=observed_at_dt,
-        fetched_at=fetched_at_dt,
+        retrieved_at=retrieved_at_dt,
+        analyzed_at=analyzed_at_dt,
+        fetched_at=analyzed_at_dt,
+        direction=data.get("direction", "unknown"),
+        evidence_strength=data.get("evidence_strength", "unable"),
+        freshness=data.get("freshness", "unknown"),
+        reason=data.get("reason") or data.get("automated_observation"),
+        orientation_verified=data.get("orientation_verified", False),
         regions_image_url=image_url,
         clip_url=data.get("source_url"),
         user_label=data.get("user_label"),
         automated_observation=data.get("automated_observation"),
-        interpretation=data.get(
-            "interpretation",
-            "Surface motion is experimental; no current speed or safety inference.",
-        ),
-        status=data.get("status", "unclear"),
+        interpretation=data.get("interpretation", "Surface motion is experimental; no current speed or safety inference."),
+        status=data.get("status", "unable_to_assess"),
         limitations=[
             "Experimental optical-flow reading, not a measured current.",
-            "Assumes fixed camera orientation matching the recorded northward reference.",
+            "Direction thresholds are provisional and calibrated from one northward reference.",
         ],
     )
 
@@ -433,15 +442,35 @@ def _discover_latest_sargassum(live_dir: Path, max_lookback: int = 5) -> tuple[b
     return False, f"No valid USF composite in the last {max_lookback} days"
 
 
-def _update_live_sources(live_dir: Path) -> dict[str, tuple[bool, str]]:
-    """Run the independent live PoCs and return per-source (ok, message_or_error)."""
+def _eligible_delray_motion(delray: dict[str, Any] | None, clip: Path) -> tuple[bool, str]:
+    if not delray or delray.get("status") != "stream_advancing_capture_unverified":
+        return False, "current Delray acquisition unavailable"
+    acquisition_id = delray.get("acquisition_id")
+    if not acquisition_id or not clip.exists():
+        return False, "current Delray acquisition has no identified clip"
+    actual_hash = hashlib.sha256(clip.read_bytes()).hexdigest()
+    if actual_hash != acquisition_id:
+        return False, "Delray clip hash does not match the current acquisition"
+    return True, ""
+
+
+def _update_live_sources(live_dir: Path, publish=None) -> dict[str, tuple[bool, str]]:
+    """Run independent PoCs; publish each completed source without waiting for motion."""
     live_dir.mkdir(parents=True, exist_ok=True)
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+    weather_future = pool.submit(
+        _run_poc, "rainfall_forecast_poc.py",
+        ["--output", str(live_dir / "weather"), "--latitude", str(settings.inlet_lat), "--longitude", str(settings.inlet_lon)], 90,
+    )
+    sargassum_future = pool.submit(_discover_latest_sargassum, live_dir)
 
     camera_ok, camera_err = _run_poc(
         "beach_camera_health_poc.py",
         ["--output", str(live_dir / "camera"), "--fresh-minutes", "360"],
         timeout=180,
     )
+    if camera_ok and publish:
+        publish("camera")
 
     appearance_ok, appearance_err = False, "camera not ready"
     if camera_ok and (live_dir / "camera" / "result.json").exists():
@@ -450,56 +479,40 @@ def _update_live_sources(live_dir: Path) -> dict[str, tuple[bool, str]]:
             ["--input", str(live_dir / "camera"), "--output", str(live_dir / "appearance")],
             timeout=60,
         )
+        if appearance_ok and publish:
+            publish("appearance")
 
-    weather_ok, weather_err = _run_poc(
-        "rainfall_forecast_poc.py",
-        [
-            "--output",
-            str(live_dir / "weather"),
-            "--latitude",
-            str(settings.inlet_lat),
-            "--longitude",
-            str(settings.inlet_lon),
-        ],
-        timeout=90,
-    )
-
-    sargassum_ok, sargassum_err = _discover_latest_sargassum(live_dir)
-
-    # Surface flow from the captured Delray .ts
-    motion_ok, motion_err = False, "camera not ready"
-    delray_checked_at = None
-    delray_page_url = ""
+    # Surface flow is eligible only when this camera acquisition published a decoded Delray clip.
+    motion_ok, motion_err = False, "current Delray acquisition unavailable"
+    delray = None
     if camera_ok and (live_dir / "camera" / "result.json").exists():
         try:
-            camera_data = json.loads(
-                (live_dir / "camera" / "result.json").read_text(encoding="utf-8")
-            )
-            for cam in camera_data.get("cameras", []):
-                if cam.get("id") == "delray":
-                    delray_checked_at = cam.get("checked_at")
-                    delray_page_url = cam.get("page_url", "")
-                    break
-        except Exception:
-            pass
-    if delray_checked_at and (live_dir / "camera" / "delray_sample.ts").exists():
-        # Never keep a stale motion result; a failed run leaves the directory empty.
-        if (live_dir / "motion").exists():
-            shutil.rmtree(live_dir / "motion", ignore_errors=True)
-        motion_ok, motion_err = _run_poc(
-            "delray_surface_flow_poc.py",
-            [
-                "--input",
-                str(live_dir / "camera" / "delray_sample.ts"),
-                "--observed-at",
-                delray_checked_at,
-                "--source-url",
-                delray_page_url,
-                "--output",
-                str(live_dir / "motion"),
-            ],
-            timeout=120,
-        )
+            camera_data = json.loads((live_dir / "camera" / "result.json").read_text(encoding="utf-8"))
+            delray = next((cam for cam in camera_data.get("cameras", []) if cam.get("id") == "delray"), None)
+        except (OSError, ValueError):
+            delray = None
+    clip = live_dir / "camera" / "delray_sample.ts"
+    eligible, motion_err = _eligible_delray_motion(delray, clip)
+    if eligible:
+        acquisition_id = delray["acquisition_id"]
+        motion_args = [
+            "--input", str(clip), "--retrieved-at", delray.get("retrieved_at") or delray["checked_at"],
+            "--acquisition-id", acquisition_id, "--source-url", delray.get("page_url", ""),
+            "--output", str(live_dir / "motion"),
+        ]
+        if delray.get("capture_utc"):
+            motion_args.extend(["--observed-at", delray["capture_utc"]])
+        motion_ok, motion_err = _run_poc("delray_surface_flow_poc.py", motion_args, timeout=180)
+        if motion_ok and publish:
+            publish("motion")
+
+    weather_ok, weather_err = weather_future.result()
+    if weather_ok and publish:
+        publish("weather")
+    sargassum_ok, sargassum_err = sargassum_future.result()
+    if sargassum_ok and publish:
+        publish("sargassum")
+    pool.shutdown(wait=True)
 
     return {
         "camera": (camera_ok, camera_err),
@@ -510,13 +523,54 @@ def _update_live_sources(live_dir: Path) -> dict[str, tuple[bool, str]]:
     }
 
 
+def _publish_source_atomically(staging: Path, live_dir: Path, source: str) -> None:
+    source_dir = staging / source
+    if not source_dir.exists():
+        return
+    target = live_dir / source
+    target.mkdir(parents=True, exist_ok=True)
+    files = sorted(source_dir.rglob("*"), key=lambda p: p.name == "result.json")
+    for path in files:
+        if not path.is_file():
+            continue
+        destination = target / path.relative_to(source_dir)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        temporary = destination.with_suffix(destination.suffix + ".tmp")
+        shutil.copy2(path, temporary)
+        temporary.replace(destination)
+
+
+def _refresh_live_sources(live_dir: Path) -> None:
+    staging = live_dir.parent / f"live-staging-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')}"
+    try:
+        statuses = _update_live_sources(staging, lambda source: _publish_source_atomically(staging, live_dir, source))
+        status_file = live_dir / "refresh_status.json"
+        temporary = status_file.with_suffix(".tmp")
+        temporary.write_text(json.dumps({"completed_at": datetime.now(timezone.utc).isoformat(), "sources": statuses}), encoding="utf-8")
+        temporary.replace(status_file)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+
+
+async def _start_refresh(live_dir: Path) -> None:
+    global _refresh_task, _refresh_started_at
+    if _refresh_task and not _refresh_task.done():
+        return
+    _refresh_started_at = datetime.now(timezone.utc)
+    _refresh_task = asyncio.create_task(asyncio.to_thread(_refresh_live_sources, live_dir))
+
+
 def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
-    """Assemble the live/cached conditions payload."""
+    """Assemble promptly from atomically published live/cached observations."""
     now = datetime.now(timezone.utc)
     live_dir = _live_dir()
     live_dir.mkdir(parents=True, exist_ok=True)
-
-    source_status = _update_live_sources(live_dir)
+    source_status = {name: (True, "last published result") for name in ("camera", "appearance", "weather", "sargassum", "motion")}
+    try:
+        published_status = json.loads((live_dir / "refresh_status.json").read_text(encoding="utf-8"))
+        source_status.update({name: (bool(value[0]), str(value[1])) for name, value in published_status.get("sources", {}).items()})
+    except (OSError, ValueError, TypeError, IndexError):
+        pass
 
     cameras = _build_camera_health(base, live_dir, "fixtures/live")
     if not source_status["camera"][0]:
@@ -560,6 +614,9 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
         logger.warning("Sargassum unavailable: %s", source_status["sargassum"][1])
 
     surface_motion = _build_surface_motion(base, live_dir, "fixtures/live")
+    if surface_motion and not source_status["motion"][0]:
+        surface_motion.freshness = "cached"
+        surface_motion.limitations.append("Current Delray analysis failed; showing the previous result with its original timestamps: " + source_status["motion"][1])
 
     limitations = [
         "Image colour thresholds are exploratory.",
@@ -576,6 +633,8 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
     return SnorkelConditionsResponse(
         generated_at_utc=now,
         mode="live",
+        refresh_status="running" if _refresh_task and not _refresh_task.done() else "idle",
+        refresh_started_at=_refresh_started_at,
         mode_disclaimer=(
             "Live fetch. Each source is fetched independently and carries its own "
             "observed_at timestamp; cached results are used when a live source fails. "
@@ -596,10 +655,13 @@ def _build_live_conditions(base: str) -> SnorkelConditionsResponse:
 async def get_snorkel_conditions(
     request: Request,
     mode: str = Query("recorded_replay", enum=["recorded_replay", "live"]),
+    refresh: bool = Query(False),
 ) -> SnorkelConditionsResponse:
     base = _base_url(request)
 
     if mode == "live":
+        if refresh:
+            await _start_refresh(_live_dir())
         return _build_live_conditions(base)
 
     now = datetime.now(timezone.utc)

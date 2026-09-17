@@ -49,6 +49,7 @@ class WaterAppearanceObservation(BaseModel):
     location: str
     headline: str
     source_url: Optional[str] = None
+    error: Optional[str] = None
     image_url: Optional[str] = None
     fetched_at: Optional[datetime] = None
     observed_at: Optional[datetime] = None
@@ -133,8 +134,17 @@ class C16Observation(BaseModel):
 
 class SurfaceMotionObservation(BaseModel):
     developer_only: bool = True
+    location: str = "Delray Beach"
+    acquisition_id: Optional[str] = None
     observed_at: Optional[datetime] = None
+    retrieved_at: Optional[datetime] = None
+    analyzed_at: Optional[datetime] = None
     fetched_at: Optional[datetime] = None
+    direction: str = "unknown"
+    evidence_strength: str = "unable"
+    freshness: str = "unknown"
+    reason: Optional[str] = None
+    orientation_verified: bool = False
     regions_image_url: Optional[str] = None
     clip_url: Optional[str] = None
     user_label: Optional[str] = None
@@ -148,6 +158,8 @@ class SnorkelConditionsResponse(BaseModel):
     generated_at_utc: datetime
     mode: str
     mode_disclaimer: str
+    refresh_status: str = "idle"
+    refresh_started_at: Optional[datetime] = None
     location: LocationInfo
     cameras: list[CameraHealthObservation] = []
     water_appearance: list[WaterAppearanceObservation] = []
