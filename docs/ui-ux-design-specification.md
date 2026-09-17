@@ -345,7 +345,7 @@ From top to bottom:
 1. App bar: wave icon, `PBC Snorkel` title, refresh icon, settings icon.
 2. Camera hero card (full width, 280 dp height): coastal image with bottom gradient; overlay shows location, appearance headline, retrieval/capture-time chip, and `See evidence` text link.
 3. Conditions panel begins immediately below the hero:
-   - Surface flow tile (first), with wave icon, direction label, `Experimental` chip, support text, observation time, and `See evidence` text link.
+   - Surface flow tile (first), identified as Delray, with a structured direction/evidence label (`Likely`, `Possible`, mixed, no clear motion, or unable), neutral `Experimental` chip, freshness and separate capture/retrieval/analysis times, and a `See evidence` text link. Missing capture time does not suppress motion evidence.
    - Two compact cards side-by-side: Wind and Rain.
    - Offshore sargassum card: status text in amber only when the status is a signal, exact composite period and age, three text links (`Chart`, `Source`, `Legend`).
    - C-16 information row: note + `Open SFWMD information` text link.

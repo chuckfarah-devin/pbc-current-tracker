@@ -25,7 +25,9 @@ class SurfaceFlowPocTests(unittest.TestCase):
 
     def _run(self, input_path: Path, output: Path) -> dict:
         r = subprocess.run(
-            [sys.executable, str(self._script), "--input", str(input_path), "--output", str(output)],
+            [sys.executable, str(self._script), "--input", str(input_path), "--output", str(output),
+             "--retrieved-at", "2026-09-17T14:32:00+00:00", "--acquisition-id", "test-acquisition",
+             "--minimum-duration", "10"],
             capture_output=True,
             text=True,
             timeout=120,
@@ -61,7 +63,46 @@ class SurfaceFlowPocTests(unittest.TestCase):
                 self.skipTest("Could not write test video")
             out = Path(td) / "flow"
             data = self._run(video_path, out)
-            self.assertEqual(data["status"], "unclear")
+            self.assertEqual(data["status"], "unable_to_assess")
+            self.assertIsNone(data["observed_at"])
+            self.assertEqual(data["retrieved_at"], "2026-09-17T14:32:00+00:00")
+
+    def test_zero_motion_is_neutral_and_weak_consistent_motion_can_be_possible(self):
+        if not HAS_CV:
+            self.skipTest("OpenCV / NumPy not available")
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("flow", self._script)
+        flow = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(flow)
+        neutral = {name: {"usable": True, "median_dx_normalized_px_per_second": 0.01,
+            "noise_floor_normalized_px_per_second": 0.05, "leftward_agreement": 0.0,
+            "rightward_agreement": 0.0, "window_medians": [0.01, 0.01], "pair_count": 20}
+            for name in flow.BASE_REGIONS}
+        self.assertEqual(flow.classify(neutral, {})["status"], "no_clear_directional_motion")
+        weak = {name: {**value, "median_dx_normalized_px_per_second": -0.08,
+            "leftward_agreement": 0.70, "window_medians": [-0.08, -0.07]}
+            for name, value in neutral.items()}
+        result = flow.classify(weak, {})
+        self.assertEqual(result["status"], "possible_northward")
+        south = {name: {**value, "median_dx_normalized_px_per_second": 0.08,
+            "rightward_agreement": 0.70, "window_medians": [0.08, 0.07]}
+            for name, value in neutral.items()}
+        self.assertEqual(flow.classify(south, {})["status"], "possible_southward")
+        mixed = dict(weak)
+        mixed["Reflection edge"] = south["Reflection edge"]
+        self.assertEqual(flow.classify(mixed, {})["status"], "motion_detected_direction_mixed")
+
+    def test_stale_or_mismatched_delray_clip_is_ineligible(self):
+        from app.routers.snorkel_conditions import _eligible_delray_motion
+        with TemporaryDirectory() as td:
+            clip = Path(td) / "delray.ts"
+            clip.write_bytes(b"current acquisition")
+            other_camera = {"id": "boynton", "status": "available", "acquisition_id": "anything"}
+            self.assertFalse(_eligible_delray_motion(other_camera, clip)[0])
+            stale = {"id": "delray", "status": "stream_advancing_capture_unverified", "acquisition_id": "old-hash"}
+            ok, reason = _eligible_delray_motion(stale, clip)
+            self.assertFalse(ok)
+            self.assertIn("hash", reason)
 
 
 if __name__ == "__main__":

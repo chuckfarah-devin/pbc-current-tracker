@@ -108,14 +108,14 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
                 tv.text = "Framing not verified · no automated colour claim."
                 tv.setPadding(0, 4, 0, 4)
                 tv.setTextAppearance(requireContext(), com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
-                tv.setTextColor(requireContext().getColor(android.R.color.white))
+                tv.setTextColor(com.google.android.material.color.MaterialColors.getColor(tv, com.google.android.material.R.attr.colorOnSurface))
                 binding.containerSamples.addView(tv)
             }
             appearance.samples.isNullOrEmpty() -> {
                 val tv = TextView(requireContext())
                 tv.text = getString(R.string.na)
                 tv.setTextAppearance(requireContext(), com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
-                tv.setTextColor(requireContext().getColor(android.R.color.white))
+                tv.setTextColor(com.google.android.material.color.MaterialColors.getColor(tv, com.google.android.material.R.attr.colorOnSurface))
                 binding.containerSamples.addView(tv)
             }
             else -> {
@@ -124,7 +124,7 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
                     tv.text = "${s.region} · ${SnorkelFormat.colorLabel(s)}"
                     tv.setPadding(0, 4, 0, 4)
                     tv.setTextAppearance(requireContext(), com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
-                    tv.setTextColor(requireContext().getColor(android.R.color.white))
+                    tv.setTextColor(com.google.android.material.color.MaterialColors.getColor(tv, com.google.android.material.R.attr.colorOnSurface))
                     binding.containerSamples.addView(tv)
                 }
             }
@@ -137,16 +137,19 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
             val from = w.wind.fromCompass ?: getString(R.string.na)
             val toward = w.wind.towardCompass ?: ""
             val gust = w.wind.gustMph ?: w.wind.gustKn?.times(1.150779448)
-            binding.tvEvidenceWind.text = (
-                "%.1f mph from $from${if (toward.isNotBlank()) " → $toward" else ""}\n".format(speed) +
-                "Gusts %.1f mph".format(gust)
-            )
+            binding.tvEvidenceWind.text = buildString {
+                append("%.1f mph from $from${if (toward.isNotBlank()) " → $toward" else ""}\n".format(speed))
+                append("Gusts %.1f mph".format(gust))
+                SnorkelFormat.time(w.wind.timeUtc)?.let { append("\nObservation: $it") }
+            }
             val recent = w.recent24h.mm
             val forward = w.forward24h.mm
-            binding.tvEvidenceRain.text = (
-                "Previous 24h: %.1f mm\n".format(recent) +
-                "Next 24h: %.1f mm".format(forward)
-            )
+            binding.tvEvidenceRain.text = buildString {
+                append("Previous 24h: %.1f mm\n".format(recent))
+                append("Window: ${w.recent24h.startUtc ?: "unknown"} to ${w.recent24h.endUtc ?: "unknown"}\n")
+                append("Next 24h: %.1f mm\n".format(forward))
+                append("Window: ${w.forward24h.startUtc ?: "unknown"} to ${w.forward24h.endUtc ?: "unknown"}")
+            }
         } ?: run {
             binding.tvEvidenceWind.text = getString(R.string.na)
             binding.tvEvidenceRain.text = getString(R.string.na)
@@ -198,6 +201,8 @@ class EvidenceBottomSheet : BottomSheetDialogFragment() {
         limitations.addAll(data.limitations)
         health?.limitations?.let { limitations.addAll(it) }
         appearance?.limitations?.let { limitations.addAll(it) }
+        data.weather?.limitations?.let { limitations.addAll(it) }
+        data.surfaceMotion?.limitations?.let { limitations.addAll(it) }
         binding.tvEvidenceLimitations.text = if (limitations.isEmpty())
             getString(R.string.na)
         else

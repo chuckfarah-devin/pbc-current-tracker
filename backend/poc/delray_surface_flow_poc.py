@@ -43,38 +43,109 @@ def scale_regions(h: int, w: int) -> dict[str, tuple[int, int, int, int]] | None
     return regions
 
 
-def read_frames(path, step=6):
+def read_frames(path, sample_fps=5.0):
     c = cv2.VideoCapture(str(path))
-    frames = []
+    source_fps = float(c.get(cv2.CAP_PROP_FPS) or 0.0)
+    if source_fps <= 0 or source_fps > 120:
+        source_fps = 30.0
+    step = max(1, round(source_fps / sample_fps))
+    frames, times, duplicates = [], [], 0
+    index = 0
+    previous = None
     while True:
-        ok, f = c.read()
+        ok, frame = c.read()
         if not ok:
             break
-        if int(c.get(cv2.CAP_PROP_POS_FRAMES)) % step == 1:
-            frames.append(f)
+        if index % step == 0:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            if previous is not None and float(np.mean(cv2.absdiff(previous, gray))) < 0.25:
+                duplicates += 1
+            else:
+                frames.append(frame)
+                times.append(index / source_fps)
+                previous = gray
+        index += 1
     c.release()
-    return frames
+    return frames, times, {"source_fps": source_fps, "duplicate_frames": duplicates, "duration_seconds": index / source_fps}
 
 
-def analyze(frames, regions):
-    rows = {k: [] for k in regions}
+def _camera_offsets(frames):
+    offsets = [0.0]
     for a, b in zip(frames, frames[1:]):
+        h, w = a.shape[:2]
+        aa = cv2.cvtColor(a[: max(1, int(h * 0.30))], cv2.COLOR_BGR2GRAY)
+        bb = cv2.cvtColor(b[: max(1, int(h * 0.30))], cv2.COLOR_BGR2GRAY)
+        points = cv2.goodFeaturesToTrack(aa, 120, 0.02, 8)
+        if points is None or len(points) < 8:
+            offsets.append(0.0)
+            continue
+        moved, status, _ = cv2.calcOpticalFlowPyrLK(aa, bb, points, None)
+        valid = status.ravel() == 1
+        offsets.append(float(np.median((moved[valid] - points[valid])[:, 0, 0])) if valid.sum() >= 8 else 0.0)
+    return np.asarray(offsets[1:], dtype=float)
+
+
+def analyze(frames, times, regions):
+    if len(frames) < 10 or len(times) != len(frames):
+        raise ValueError("Insufficient decoded footage")
+    camera_dx = _camera_offsets(frames)
+    if len(camera_dx) == 0:
+        raise ValueError("No consecutive frame intervals")
+    if float(np.percentile(np.abs(camera_dx), 90)) > 2.5:
+        raise ValueError("Camera pan, zoom, or framing change detected")
+    rows = {k: [] for k in regions}
+    for i, (a, b) in enumerate(zip(frames, frames[1:])):
+        dt = times[i + 1] - times[i]
+        if dt <= 0 or dt > 0.75:
+            continue
         for name, (x, y, r, t) in regions.items():
             aa = cv2.cvtColor(a[y:t, x:r], cv2.COLOR_BGR2GRAY)
             bb = cv2.cvtColor(b[y:t, x:r], cv2.COLOR_BGR2GRAY)
-            if aa.shape != bb.shape:
-                raise ValueError("Frame crop size mismatch")
+            texture = float(aa.std())
+            if aa.size == 0 or aa.shape != bb.shape or texture < 5.0:
+                continue
             flow = cv2.calcOpticalFlowFarneback(aa, bb, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-            rows[name].append([float(np.median(flow[:, :, 0])), float(np.median(flow[:, :, 1]))])
+            dx = (float(np.median(flow[:, :, 0])) - camera_dx[i]) * (BASE_FRAME_SIZE[0] / a.shape[1]) / dt
+            rows[name].append((times[i], dx, texture, dt))
     result = {}
     for name, vals in rows.items():
-        arr = np.array(vals)
+        if len(vals) < 8:
+            result[name] = {"usable": False, "reason": "insufficient textured intervals", "pair_count": len(vals)}
+            continue
+        arr = np.asarray([v[1] for v in vals], dtype=float)
+        noise = max(0.03, float(np.median(np.abs(arr - np.median(arr)))) * 1.4826)
+        directional = arr[np.abs(arr) > noise]
+        windows = []
+        for start in np.arange(vals[0][0], vals[-1][0] + 0.001, 4.0):
+            chunk = np.asarray([v[1] for v in vals if start <= v[0] < start + 4.0])
+            if len(chunk) >= 4:
+                windows.append(float(np.median(chunk)))
+        interval_drift = {}
+        sample_times = np.asarray([v[0] for v in vals], dtype=float)
+        cumulative = np.cumsum(arr * np.asarray([v[3] for v in vals], dtype=float))
+        for target in (0.2, 0.5, 1.0, 2.0):
+            estimates = []
+            for i, start in enumerate(sample_times):
+                j = int(np.searchsorted(sample_times, start + target))
+                if j < len(cumulative) and j > i:
+                    elapsed = sample_times[j] - start
+                    estimates.append(float((cumulative[j] - cumulative[i]) / elapsed))
+            interval_drift[f"{target:g}s"] = float(np.median(estimates)) if estimates else None
         result[name] = {
-            "median_dx_pixels_per_0_2s": round(float(np.median(arr[:, 0])), 3),
-            "median_dy_pixels_per_0_2s": round(float(np.median(arr[:, 1])), 3),
-            "leftward_pair_percent": round(float((arr[:, 0] < 0).mean() * 100), 1),
+            "usable": len(directional) >= 6 and len(windows) >= 2,
+            "median_dx_normalized_px_per_second": float(np.median(arr)),
+            "noise_floor_normalized_px_per_second": noise,
+            "leftward_agreement": float((directional < 0).mean()) if len(directional) else 0.0,
+            "rightward_agreement": float((directional > 0).mean()) if len(directional) else 0.0,
+            "interval_drift_normalized_px_per_second": interval_drift,
+            "window_medians": windows,
             "pair_count": len(vals),
+            "texture_std": float(np.median([v[2] for v in vals])),
         }
+    result["camera_check"] = {
+        "median_dx_pixels_per_interval": float(np.median(camera_dx)),
+        "p90_abs_dx_pixels_per_interval": float(np.percentile(np.abs(camera_dx), 90)),
+    }
     return result
 
 
@@ -114,53 +185,41 @@ def check_framing(frames, regions):
     return True, ""
 
 
-def classify(live, reference, agreement_threshold=0.65):
-    """Direction classification.
-
-    Thresholds are provisional and calibrated from a single northward reference.
-    Validate with southward, weak-current and camera-pan examples before relying
-    on the labels in production.
-    """
-    names = list(BASE_REGIONS.keys())
-    dxs = [live[n]["median_dx_pixels_per_0_2s"] for n in names]
-    dys = [live[n]["median_dy_pixels_per_0_2s"] for n in names]
-    lefts = [live[n]["leftward_pair_percent"] / 100.0 for n in names]
-    pair_counts = [live[n]["pair_count"] for n in names]
-
-    if any(c < 10 for c in pair_counts):
-        return "unclear", "Too few frame pairs for a reliable motion estimate."
-
-    # Calibrate thresholds from the recorded northward reference.
-    ref_right = reference.get("Right of reflection", {})
-    ref_edge = reference.get("Reflection edge", {})
-    ref_mag = max(
-        0.05,
-        abs(ref_right.get("median_dx_pixels_per_0_2s", 0.0)),
-        abs(ref_edge.get("median_dx_pixels_per_0_2s", 0.0)),
-    )
-    motion_threshold = 0.1 * ref_mag
-    camera_move_threshold = ref_mag
-
-    # Camera-movement check: all regions moving together too strongly suggests pan.
-    dx_range = max(dxs) - min(dxs)
-    if abs(dx_range) < 0.1 and abs(np.median(dxs)) > camera_move_threshold:
-        return "unclear", "Similar large horizontal motion across all regions suggests camera movement, not surface flow."
-
-    edge_left = live["Reflection edge"]["leftward_pair_percent"]
-    right_left = live["Right of reflection"]["leftward_pair_percent"]
-    edge_mag = abs(live["Reflection edge"]["median_dx_pixels_per_0_2s"])
-    right_mag = abs(live["Right of reflection"]["median_dx_pixels_per_0_2s"])
-
-    if edge_mag < motion_threshold and right_mag < motion_threshold:
-        return "unclear", "Horizontal motion is too weak to classify."
-
-    if edge_left < (1 - agreement_threshold) * 100 and right_left < (1 - agreement_threshold) * 100:
-        return "likely_southward", "Surface motion appears toward the right in the frame, consistent with southward flow given the reference orientation."
-
-    if edge_left > agreement_threshold * 100 and right_left > agreement_threshold * 100:
-        return "likely_northward", "Surface motion appears toward the left in the frame, consistent with the recorded northward reference."
-
-    return "unclear", "Motion pattern does not clearly match the northward or southward reference."
+def classify(live, reference, orientation_verified=True):
+    """Provisional evidence rules; percentages are tuning candidates, not accuracy claims."""
+    patches = [v for k, v in live.items() if k in BASE_REGIONS and v.get("usable")]
+    if not patches:
+        return {"direction": "none", "evidence_strength": "none", "status": "no_clear_directional_motion", "reason": "No textured patch exceeded its measured noise floor across separate windows."}
+    votes = []
+    for patch in patches:
+        threshold = max(patch["noise_floor_normalized_px_per_second"], 0.05)
+        dx = patch["median_dx_normalized_px_per_second"]
+        windows = patch["window_medians"]
+        persistent = sum(x < -threshold for x in windows) >= 2 or sum(x > threshold for x in windows) >= 2
+        if abs(dx) <= threshold or not persistent:
+            votes.append(("neutral", 0.0, abs(dx), threshold))
+        elif patch["leftward_agreement"] >= patch["rightward_agreement"]:
+            votes.append(("left", patch["leftward_agreement"], abs(dx), threshold))
+        else:
+            votes.append(("right", patch["rightward_agreement"], abs(dx), threshold))
+    credible = [v for v in votes if v[0] != "neutral"]
+    if not credible:
+        return {"direction": "none", "evidence_strength": "none", "status": "no_clear_directional_motion", "reason": "Displacement remained below the measured noise floor or did not persist across windows."}
+    left = [v for v in credible if v[0] == "left"]
+    right = [v for v in credible if v[0] == "right"]
+    if left and right:
+        return {"direction": "mixed", "evidence_strength": "mixed", "status": "motion_detected_direction_mixed", "reason": "Credible patches disagreed or repeatedly reversed direction."}
+    agreed = left or right
+    likely = len(agreed) >= 2 and all(v[1] >= 0.80 and v[2] >= 2 * v[3] for v in agreed[:2])
+    possible = (len(agreed) >= 2 and all(v[1] >= 0.60 for v in agreed[:2])) or (len(agreed) == 1 and agreed[0][1] >= 0.75)
+    image_direction = agreed[0][0]
+    geographic = "northward" if image_direction == "left" else "southward"
+    direction = geographic if orientation_verified else image_direction
+    if likely:
+        return {"direction": direction, "evidence_strength": "likely", "status": f"likely_{direction}", "reason": "Strong noise-adjusted drift agreed across usable patches and separate time windows."}
+    if possible:
+        return {"direction": direction, "evidence_strength": "possible", "status": f"possible_{direction}", "reason": "Weak but credible noise-adjusted drift persisted without contradictory evidence."}
+    return {"direction": "mixed", "evidence_strength": "mixed", "status": "motion_detected_direction_mixed", "reason": "Motion exceeded noise but directional agreement was insufficient."}
 
 
 def annotate(frames, regions, output: Path):
@@ -182,8 +241,11 @@ def main():
         help="Recorded northward reference",
     )
     p.add_argument("--output", type=Path, default=Path("surface_flow_output"))
-    p.add_argument("--observed-at", default=None, help="ISO observed timestamp (default now)")
+    p.add_argument("--observed-at", default=None, help="Verified ISO capture timestamp, if supplied by source")
+    p.add_argument("--retrieved-at", required=True, help="ISO retrieval timestamp for this acquisition")
+    p.add_argument("--acquisition-id", required=True, help="SHA-256 identity of this acquisition")
     p.add_argument("--source-url", default="", help="Source page URL to embed in report")
+    p.add_argument("--minimum-duration", type=float, default=20.0, help="Minimum decoded seconds; lower only for explicit fixture tests")
     args = p.parse_args()
 
     try:
@@ -192,39 +254,37 @@ def main():
         print(f"Reference load failed: {exc}", file=sys.stderr)
         return 1
 
-    observed_at = args.observed_at or datetime.now(timezone.utc).isoformat()
     try:
-        frames = read_frames(args.input)
+        frames, times, media = read_frames(args.input)
         h, w = frames[0].shape[:2] if frames else (0, 0)
         regions = scale_regions(h, w) if frames else None
         ok, reason = check_framing(frames, regions)
+        if media["duration_seconds"] < args.minimum_duration:
+            ok, reason = False, f"Only {media['duration_seconds']:.1f}s decoded; need at least {args.minimum_duration:g}s"
         if not ok:
             result = {
-                "status": "unclear",
-                "framing_verified": False,
-                "framing_reject_reason": reason,
-                "regions": {},
-                "classified_at_utc": datetime.now(timezone.utc).isoformat(),
-                "observed_at": observed_at,
-                "user_label": "Surface flow: unclear",
-                "automated_observation": "Could not verify Delray framing or lighting.",
-                "interpretation": "Surface motion is experimental. Camera framing, lighting or stream quality prevented a direction estimate. No current speed is reported.",
+                "status": "unable_to_assess", "direction": "unknown", "evidence_strength": "unable",
+                "freshness": "fresh", "reason": reason, "orientation_verified": False,
+                "framing_verified": False, "regions": {}, "media": media,
+                "analyzed_at": datetime.now(timezone.utc).isoformat(), "observed_at": args.observed_at,
+                "retrieved_at": args.retrieved_at, "acquisition_id": args.acquisition_id,
+                "user_label": "Surface flow: unable to assess",
+                "automated_observation": reason,
+                "interpretation": "Surface motion is experimental. Acquisition, decoding, framing, or camera checks prevented assessment. No current speed is reported.",
                 "source_url": args.source_url,
             }
         else:
-            live = analyze(frames, regions)
-            status, note = classify(live, reference)
-            user_label = f"Surface flow: {status.replace('_', ' ')}"
+            live = analyze(frames, times, regions)
+            classification = classify(live, reference, orientation_verified=True)
+            label = f"{classification['evidence_strength']} {classification['direction']}" if classification['direction'] not in ("none", "mixed", "unknown") else classification['status'].replace('_', ' ')
             annotate(frames, regions, args.output)
             result = {
-                "status": status,
-                "framing_verified": True,
-                "regions": live,
-                "classified_at_utc": datetime.now(timezone.utc).isoformat(),
-                "observed_at": observed_at,
-                "user_label": user_label,
-                "automated_observation": note,
-                "interpretation": "Surface motion is an experimental optical-flow reading from a short camera clip, not a measured current. Results assume the camera is fixed and oriented like the recorded northward reference. Weak or inconsistent motion is reported as unclear.",
+                **classification, "freshness": "fresh", "orientation_verified": True,
+                "framing_verified": True, "regions": live, "media": media,
+                "analyzed_at": datetime.now(timezone.utc).isoformat(), "observed_at": args.observed_at,
+                "retrieved_at": args.retrieved_at, "acquisition_id": args.acquisition_id,
+                "user_label": f"Surface flow: {label}", "automated_observation": classification["reason"],
+                "interpretation": "Surface motion is an experimental, noise-adjusted optical-flow reading over separate clip windows, not a measured current or safety assessment.",
                 "source_url": args.source_url,
             }
         args.output.mkdir(parents=True, exist_ok=True)
@@ -232,8 +292,20 @@ def main():
         print(json.dumps(result, indent=2))
         return 0
     except Exception as exc:
-        print(f"Surface flow POC failed: {exc}", file=sys.stderr)
-        return 1
+        result = {
+            "status": "unable_to_assess", "direction": "unknown", "evidence_strength": "unable",
+            "freshness": "fresh", "reason": str(exc), "orientation_verified": False,
+            "framing_verified": False, "regions": {}, "observed_at": args.observed_at,
+            "retrieved_at": args.retrieved_at, "analyzed_at": datetime.now(timezone.utc).isoformat(),
+            "acquisition_id": args.acquisition_id, "user_label": "Surface flow: unable to assess",
+            "automated_observation": str(exc),
+            "interpretation": "Surface motion is experimental; input quality prevented assessment. No current speed is reported.",
+            "source_url": args.source_url,
+        }
+        args.output.mkdir(parents=True, exist_ok=True)
+        (args.output / "result.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
+        print(json.dumps(result, indent=2))
+        return 0
 
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     cdse_password: str = ""        # Sentinel-2 access
 
     # Path to the extracted PoC handoff package for recorded-replay fixtures.
-    # Set PBC_HANDOFF_DIR in your .env if the sibling-folder default does not match.
+    # Set POC_HANDOFF_DIR in your .env if the sibling-folder default does not match.
     poc_handoff_dir: str = str(_HANDOFF_SIBLING)
     replay_demo_dir: str = "demo"
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] PR review — responsive refresh and graded surface motion
+
+### Changed
+- Bind Delray clips to the current camera acquisition with a SHA-256 acquisition ID; a successful non-Delray fetch cannot authorize stale motion footage.
+- Preserve capture, retrieval, and analysis timestamps separately; missing capture time remains unknown rather than inheriting retrieval time.
+- Acquire and concatenate at least 20 seconds of live HLS footage, reject discontinuities/short footage, and normalize sequential optical flow by elapsed time and resolution.
+- Add stationary-structure camera-motion compensation, per-patch texture/noise checks, separate time-window persistence, and graded `likely`, `possible`, `mixed`, `none`, and `unable` evidence states.
+- Return cached conditions immediately while a deduplicated background refresh runs; publish source files atomically.
+- Render surface-motion labels from structured fields, identify Delray, show freshness separately, restore actual appearance headlines, and include weather times/failure limitations in evidence.
+- Declare Requests, NumPy, Pillow, OpenCV, and timezone dependencies; use `POC_HANDOFF_DIR` for portable replay configuration.
+
 ## [Unreleased] UI visual redesign
 
 ### Changed

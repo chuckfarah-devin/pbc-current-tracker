@@ -6,8 +6,8 @@ import timber.log.Timber
 
 class SnorkelConditionsRepository(private val api: SnorkelApiService) {
 
-    suspend fun fetch(mode: String? = null): Result<SnorkelConditionsResponse> = try {
-        val response = api.getSnorkelConditions(mode)
+    suspend fun fetch(mode: String? = null, refresh: Boolean = false): Result<SnorkelConditionsResponse> = try {
+        val response = api.getSnorkelConditions(mode, refresh)
         Timber.d("Snorkel conditions fetched: mode=${response.mode}")
         Result.success(response)
     } catch (e: Exception) {
