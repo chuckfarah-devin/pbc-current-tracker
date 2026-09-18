@@ -24,6 +24,9 @@ class ConditionsViewModel(app: Application) : AndroidViewModel(app) {
         const val DEFAULT_URL = "http://10.0.2.2:8000"
         const val PREF_FILE   = "pbc_settings"
         const val PREF_URL    = "backend_url"
+        const val PREF_DEMO_MODE = "demo_mode"
+        const val PREF_DEMO_MODE_SET = "demo_mode_set"
+        const val DEFAULT_DEMO_MODE = true
         const val WORK_TAG    = "conditions_refresh"
 
         // Boynton Inlet default
@@ -69,6 +72,31 @@ class ConditionsViewModel(app: Application) : AndroidViewModel(app) {
 
     fun currentBackendUrl(): String =
         prefs.getString(PREF_URL, DEFAULT_URL) ?: DEFAULT_URL
+
+    /** Returns whether the app should use bundled offline demo data.
+     *  On first run: defaults to demo mode.
+     *  On upgrade from a version that stored a custom backend URL: preserves live mode. */
+    fun isDemoMode(): Boolean {
+        if (prefs.contains(PREF_DEMO_MODE_SET)) {
+            return prefs.getBoolean(PREF_DEMO_MODE, DEFAULT_DEMO_MODE)
+        }
+        // Migration path: if the user previously configured a non-default backend URL,
+        // stay in live mode so we don't break an existing setup.
+        val configuredUrl = prefs.getString(PREF_URL, DEFAULT_URL) ?: DEFAULT_URL
+        val defaultToDemo = configuredUrl == DEFAULT_URL
+        prefs.edit()
+            .putBoolean(PREF_DEMO_MODE, defaultToDemo)
+            .putBoolean(PREF_DEMO_MODE_SET, true)
+            .apply()
+        return defaultToDemo
+    }
+
+    fun setDemoMode(enabled: Boolean) {
+        prefs.edit()
+            .putBoolean(PREF_DEMO_MODE, enabled)
+            .putBoolean(PREF_DEMO_MODE_SET, true)
+            .apply()
+    }
 
     // ── WorkManager 30-min background refresh ─────────────────────────────────
     private fun scheduleBackgroundRefresh(app: Application) {

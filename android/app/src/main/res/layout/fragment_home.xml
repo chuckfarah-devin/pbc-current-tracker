@@ -57,6 +57,18 @@
                 app:tint="@color/snorkel_icon" />
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/tvDemoModeBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_banner"
+            android:padding="10dp"
+            android:text="@string/demo_mode_banner"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:visibility="gone" />
+
         <ProgressBar
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleSmall"

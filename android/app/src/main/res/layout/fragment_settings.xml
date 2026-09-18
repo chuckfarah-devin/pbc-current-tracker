@@ -5,11 +5,26 @@
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:padding="24dp">
 
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchDemoMode"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/use_demo_mode" />
+
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:id="@+id/tvDemoModeHint"
+            android:text="@string/demo_mode_hint"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginBottom="16dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:id="@+id/tvBackendSectionTitle"
             android:text="@string/section_backend" android:textAppearance="?attr/textAppearanceTitleMedium"
             android:layout_marginBottom="8dp" />
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilBackendUrl"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:hint="@string/hint_backend_url"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
@@ -25,6 +40,12 @@
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/btn_save" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/external_links_require_internet"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
 
     </LinearLayout>
 </ScrollView>

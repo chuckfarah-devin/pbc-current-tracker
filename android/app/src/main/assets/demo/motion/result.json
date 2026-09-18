@@ -1,0 +1,20 @@
+{
+  "Left of reflection": {
+    "median_dx_pixels_per_0_2s": -0.0,
+    "median_dy_pixels_per_0_2s": 0.0,
+    "leftward_pair_percent": 79.2,
+    "pair_count": 77
+  },
+  "Reflection edge": {
+    "median_dx_pixels_per_0_2s": -0.236,
+    "median_dy_pixels_per_0_2s": 0.147,
+    "leftward_pair_percent": 98.7,
+    "pair_count": 77
+  },
+  "Right of reflection": {
+    "median_dx_pixels_per_0_2s": -0.395,
+    "median_dy_pixels_per_0_2s": 0.015,
+    "leftward_pair_percent": 100.0,
+    "pair_count": 77
+  }
+}

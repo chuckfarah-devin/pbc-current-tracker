@@ -1,0 +1,86 @@
+{
+  "source": {
+    "filename": "c20261782026184.1KM.GCOOS.7DAY.L3D.FAD.png",
+    "period_start": "2026-06-27",
+    "period_end": "2026-07-03",
+    "product": "FAD",
+    "composite": "7DAY",
+    "nominal_resolution_m": 1000,
+    "mode": "offline",
+    "image_url": "https://optics.marine.usf.edu/subscription/multi_sensor_fusion/GCOOS/2026/comp/184/c20261782026184.1KM.GCOOS.7DAY.L3D.FAD.png",
+    "legend_url": "https://optics.marine.usf.edu/images/cb/colorbar_fa_density_0.0_to_0.4.png",
+    "page_url": "https://optics.marine.usf.edu/cgi-bin/optics_data?roi=GCOOS&Date=7/3/2026",
+    "bounds_provenance": "operator supplied; not checked online"
+  },
+  "source_bounds_wsen": [
+    -98.0,
+    18.0,
+    -79.0,
+    31.0
+  ],
+  "checked_at_utc": "2026-09-14T14:02:06.509626+00:00",
+  "freshness": "Historical image: composite ended 73 days ago.",
+  "legend_palette_colors": 222,
+  "regions": {
+    "boynton_delray": {
+      "status": "OFFSHORE ALGAE SIGNAL PRESENT",
+      "image_readability": "usable for exploratory image reading",
+      "pixel_counts": {
+        "background": 564,
+        "land": 433,
+        "missing": 56,
+        "coastline": 93,
+        "legend_matched": 349,
+        "unrecognized": 1,
+        "total": 1496
+      },
+      "recognized_water_pixels_pct": 94.12,
+      "colored_pixels_pct_of_recognized_water": 38.23,
+      "beach_seaweed_level": "unknown",
+      "beaching_prediction": "not provided",
+      "interpretation": "Color matches are an exploratory rendered-image proxy, not measured algae coverage percent, biomass or beach severity. Blue background is not proof of algae-free water. Black and unmatched pixels remain unknown.",
+      "requested_bounds_wsen": [
+        -80.15,
+        26.3,
+        -79.85,
+        26.7
+      ],
+      "crop_ltrb_exclusive": [
+        1963,
+        473,
+        1997,
+        517
+      ]
+    },
+    "palm_beach_to_miami": {
+      "status": "OFFSHORE ALGAE SIGNAL PRESENT",
+      "image_readability": "usable for exploratory image reading",
+      "pixel_counts": {
+        "background": 3857,
+        "land": 4893,
+        "missing": 126,
+        "coastline": 459,
+        "legend_matched": 3364,
+        "unrecognized": 6,
+        "total": 12705
+      },
+      "recognized_water_pixels_pct": 98.2,
+      "colored_pixels_pct_of_recognized_water": 46.59,
+      "beach_seaweed_level": "unknown",
+      "beaching_prediction": "not provided",
+      "interpretation": "Color matches are an exploratory rendered-image proxy, not measured algae coverage percent, biomass or beach severity. Blue background is not proof of algae-free water. Black and unmatched pixels remain unknown.",
+      "requested_bounds_wsen": [
+        -80.4,
+        25.5,
+        -79.7,
+        27.0
+      ],
+      "crop_ltrb_exclusive": [
+        1936,
+        440,
+        2013,
+        605
+      ]
+    }
+  }
+}

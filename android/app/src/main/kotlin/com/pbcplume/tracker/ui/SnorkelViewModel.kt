@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.pbcplume.tracker.data.api.NetworkModule
+import com.pbcplume.tracker.data.repository.AssetSnorkelDataSource
+import com.pbcplume.tracker.data.repository.NetworkSnorkelDataSource
 import com.pbcplume.tracker.data.repository.SnorkelConditionsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,9 +40,14 @@ class SnorkelViewModel(app: Application) : AndroidViewModel(app) {
         if (_isRefreshing.value) return
         viewModelScope.launch {
             _isRefreshing.value = true
-            val url = prefs.getString(ConditionsViewModel.PREF_URL, ConditionsViewModel.DEFAULT_URL)
-                ?: ConditionsViewModel.DEFAULT_URL
-            val repo = SnorkelConditionsRepository(NetworkModule.buildSnorkelApiService(url))
+            val demoMode = prefs.getBoolean(ConditionsViewModel.PREF_DEMO_MODE, ConditionsViewModel.DEFAULT_DEMO_MODE)
+            val repo = if (demoMode) {
+                SnorkelConditionsRepository(AssetSnorkelDataSource(getApplication()))
+            } else {
+                val url = prefs.getString(ConditionsViewModel.PREF_URL, ConditionsViewModel.DEFAULT_URL)
+                    ?: ConditionsViewModel.DEFAULT_URL
+                SnorkelConditionsRepository(NetworkSnorkelDataSource(NetworkModule.buildSnorkelApiService(url)))
+            }
             var attempts = 0
             do {
                 val result = repo.fetch(mode, refresh = mode == "live" && attempts == 0)
