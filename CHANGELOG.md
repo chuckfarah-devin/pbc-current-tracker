@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased] Offline demo mode
+
+### Added
+- Bundled offline demo mode using local `android/app/src/main/assets/demo/` fixtures.
+- `AssetSnorkelDataSource` that loads `recorded_replay.json` from assets and serves it through the existing `SnorkelConditionsRepository` interface.
+- Demo/Live mode toggle in Settings, with demo mode as the default for fresh installs.
+- Migration logic that preserves an existing custom backend URL and keeps live mode enabled for users upgrading from a previous build.
+- Offline demo banner on the Home screen and notes in the evidence sheet that external links require internet.
+- Verification script `android/scripts/verify_offline_assets.py` to ensure every referenced demo asset is present in the APK.
+
+### Changed
+- `SnorkelConditionsRepository` now depends on a `SnorkelDataSource` interface, with `NetworkSnorkelDataSource` for live backends and `AssetSnorkelDataSource` for offline demo.
+- `ConditionsRefreshWorker` skips background refreshes while demo mode is enabled.
+- Demo refresh remains offline and re-reads the bundled fixtures.
+
 ## [Unreleased] PR review — null motion state and extended refresh polling
 
 ### Changed

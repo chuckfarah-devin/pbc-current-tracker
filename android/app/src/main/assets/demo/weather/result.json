@@ -1,0 +1,246 @@
+{
+  "reference_time_utc": "2026-09-14T14:21:46.652772+00:00",
+  "display_timezone": "America/New_York",
+  "source": "Open-Meteo weather model estimates and forecasts; not a rain gauge",
+  "recent_24h": {
+    "start_utc": "2026-09-13T14:00:00+00:00",
+    "end_utc": "2026-09-14T14:00:00+00:00",
+    "expected_hours": 24,
+    "available_hours": 24,
+    "status": "complete",
+    "mm": 9.0,
+    "inches": 0.354,
+    "category": "LIGHT RAIN"
+  },
+  "forward_24h": {
+    "start_utc": "2026-09-14T14:00:00+00:00",
+    "end_utc": "2026-09-15T14:00:00+00:00",
+    "expected_hours": 24,
+    "available_hours": 24,
+    "status": "complete",
+    "mm": 0.4,
+    "inches": 0.016,
+    "category": "LITTLE OR NO RAIN"
+  },
+  "daily_outlook": [
+    {
+      "date": "2026-09-14",
+      "label": "Today (whole day)",
+      "mm": 0.0,
+      "inches": 0.0,
+      "category": "LITTLE OR NO RAIN"
+    },
+    {
+      "date": "2026-09-15",
+      "label": "2026-09-15",
+      "mm": 0.4,
+      "inches": 0.016,
+      "category": "LITTLE OR NO RAIN"
+    },
+    {
+      "date": "2026-09-16",
+      "label": "2026-09-16",
+      "mm": 8.4,
+      "inches": 0.331,
+      "category": "LIGHT RAIN"
+    },
+    {
+      "date": "2026-09-17",
+      "label": "2026-09-17",
+      "mm": 9.0,
+      "inches": 0.354,
+      "category": "LIGHT RAIN"
+    },
+    {
+      "date": "2026-09-18",
+      "label": "2026-09-18",
+      "mm": 8.5,
+      "inches": 0.335,
+      "category": "LIGHT RAIN"
+    },
+    {
+      "date": "2026-09-19",
+      "label": "2026-09-19",
+      "mm": 6.5,
+      "inches": 0.256,
+      "category": "LIGHT RAIN"
+    },
+    {
+      "date": "2026-09-20",
+      "label": "2026-09-20",
+      "mm": 0.9,
+      "inches": 0.035,
+      "category": "LITTLE OR NO RAIN"
+    }
+  ],
+  "wind_now": {
+    "time_utc": "2026-09-14T14:00:00+00:00",
+    "speed_kn": 0.5,
+    "speed_mph": 0.58,
+    "gust_kn": 4.3,
+    "gust_period": "preceding hour maximum",
+    "from_degrees": 135,
+    "from_compass": "SE",
+    "toward_degrees": 315,
+    "toward_compass": "NW",
+    "status": "available"
+  },
+  "wind_next_12h": [
+    {
+      "time_utc": "2026-09-14T15:00:00+00:00",
+      "speed_kn": 2.2,
+      "speed_mph": 2.53,
+      "gust_kn": 4.3,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 117,
+      "from_compass": "SE",
+      "toward_degrees": 297,
+      "toward_compass": "NW",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-14T16:00:00+00:00",
+      "speed_kn": 4.3,
+      "speed_mph": 4.95,
+      "gust_kn": 4.5,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 100,
+      "from_compass": "E",
+      "toward_degrees": 280,
+      "toward_compass": "W",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-14T17:00:00+00:00",
+      "speed_kn": 5.9,
+      "speed_mph": 6.79,
+      "gust_kn": 6.6,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 99,
+      "from_compass": "E",
+      "toward_degrees": 279,
+      "toward_compass": "W",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-14T18:00:00+00:00",
+      "speed_kn": 5.9,
+      "speed_mph": 6.79,
+      "gust_kn": 6.4,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 99,
+      "from_compass": "E",
+      "toward_degrees": 279,
+      "toward_compass": "W",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-14T19:00:00+00:00",
+      "speed_kn": 6.6,
+      "speed_mph": 7.6,
+      "gust_kn": 7.6,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 95,
+      "from_compass": "E",
+      "toward_degrees": 275,
+      "toward_compass": "W",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-14T20:00:00+00:00",
+      "speed_kn": 6.9,
+      "speed_mph": 7.94,
+      "gust_kn": 8.4,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 101,
+      "from_compass": "E",
+      "toward_degrees": 281,
+      "toward_compass": "W",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-14T21:00:00+00:00",
+      "speed_kn": 6.3,
+      "speed_mph": 7.25,
+      "gust_kn": 7.8,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 117,
+      "from_compass": "SE",
+      "toward_degrees": 297,
+      "toward_compass": "NW",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-14T22:00:00+00:00",
+      "speed_kn": 6.0,
+      "speed_mph": 6.9,
+      "gust_kn": 7.8,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 128,
+      "from_compass": "SE",
+      "toward_degrees": 308,
+      "toward_compass": "NW",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-14T23:00:00+00:00",
+      "speed_kn": 6.1,
+      "speed_mph": 7.02,
+      "gust_kn": 9.5,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 143,
+      "from_compass": "SE",
+      "toward_degrees": 323,
+      "toward_compass": "NW",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-15T00:00:00+00:00",
+      "speed_kn": 5.1,
+      "speed_mph": 5.87,
+      "gust_kn": 9.1,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 151,
+      "from_compass": "SE",
+      "toward_degrees": 331,
+      "toward_compass": "NW",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-15T01:00:00+00:00",
+      "speed_kn": 3.7,
+      "speed_mph": 4.26,
+      "gust_kn": 7.4,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 171,
+      "from_compass": "S",
+      "toward_degrees": 351,
+      "toward_compass": "N",
+      "status": "available"
+    },
+    {
+      "time_utc": "2026-09-15T02:00:00+00:00",
+      "speed_kn": 3.9,
+      "speed_mph": 4.49,
+      "gust_kn": 6.2,
+      "gust_period": "preceding hour maximum",
+      "from_degrees": 243,
+      "from_compass": "SW",
+      "toward_degrees": 63,
+      "toward_compass": "NE",
+      "status": "available"
+    }
+  ],
+  "runoff_impact": "Not measured. Rainfall alone does not establish runoff, water clarity or swimming safety.",
+  "category_note": "Experimental amount bands retained from the original POC; not validated runoff thresholds.",
+  "mode": "Offline replay (historical snapshot)",
+  "requested_location": {
+    "latitude": 26.53,
+    "longitude": -80.05
+  },
+  "api_grid_location": {
+    "latitude": 26.52948,
+    "longitude": -80.06729,
+    "elevation": 2.0
+  }
+}

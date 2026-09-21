@@ -1,0 +1,102 @@
+{
+  "mode": "Recorded-image example; not current conditions",
+  "method": "Exploratory HSV colour bins in manually selected water-only rectangles",
+  "results": [
+    {
+      "camera": "lake_worth_s16",
+      "location": "Lake Worth Inlet",
+      "source_url": "https://video-monitoring.com/beachcams/lakeworthinlet/pics/s16/sep1326j/s141252h.jpg",
+      "timestamp": "Sep 14, 2026 at 12:52 PM",
+      "pixel_hash": "45fa432e854d7456ad37391c4b073e25f3f1200c72e215b8e2bf0fc3ec4e69ee",
+      "headline": "Predominantly blue / green",
+      "samples": [
+        {
+          "region": "Nearshore",
+          "bounds": [
+            0.65,
+            0.75,
+            0.93,
+            0.88
+          ],
+          "warm_percent": 0.0,
+          "blue_green_percent": 100.0,
+          "other_percent": 0.0,
+          "mean_rgb": [
+            92.8,
+            171.8,
+            187.7
+          ],
+          "pixels": 651499
+        },
+        {
+          "region": "Farther out",
+          "bounds": [
+            0.12,
+            0.52,
+            0.4,
+            0.63
+          ],
+          "warm_percent": 0.0,
+          "blue_green_percent": 100.0,
+          "other_percent": 0.0,
+          "mean_rgb": [
+            95.0,
+            172.8,
+            203.9
+          ],
+          "pixels": 551760
+        }
+      ],
+      "current_direction": null,
+      "underwater_visibility": null
+    },
+    {
+      "camera": "delray",
+      "location": "Delray Beach",
+      "source_url": "https://streamer5.brownrice.com/delraybeach1/delraybeach1.stream/main_playlist.m3u8",
+      "timestamp": "Stream retrieved 2026-09-14T17:10:54.636309+00:00; capture time unverified",
+      "pixel_hash": "89eb0d47e180fe6bfc2103bedf6a22ac45bec8a9d5d0f9d05a6a9b307ef59b5a",
+      "headline": "Predominantly blue / green",
+      "samples": [
+        {
+          "region": "Nearshore",
+          "bounds": [
+            0.65,
+            0.64,
+            0.96,
+            0.7
+          ],
+          "warm_percent": 0.0,
+          "blue_green_percent": 95.0,
+          "other_percent": 5.0,
+          "mean_rgb": [
+            94.8,
+            110.6,
+            122.5
+          ],
+          "pixels": 17071
+        },
+        {
+          "region": "Farther out",
+          "bounds": [
+            0.65,
+            0.39,
+            0.96,
+            0.49
+          ],
+          "warm_percent": 0.0,
+          "blue_green_percent": 100.0,
+          "other_percent": 0.0,
+          "mean_rgb": [
+            86.8,
+            108.8,
+            132.7
+          ],
+          "pixels": 28584
+        }
+      ],
+      "current_direction": null,
+      "underwater_visibility": null
+    }
+  ]
+}

@@ -20,6 +20,11 @@ class ConditionsRefreshWorker(
 
     override suspend fun doWork(): Result {
         val prefs = applicationContext.getSharedPreferences(ConditionsViewModel.PREF_FILE, 0)
+        val demoMode = prefs.getBoolean(ConditionsViewModel.PREF_DEMO_MODE, ConditionsViewModel.DEFAULT_DEMO_MODE)
+        if (demoMode) {
+            Timber.d("Background refresh skipped: demo mode is enabled")
+            return Result.success()
+        }
         val url   = prefs.getString(ConditionsViewModel.PREF_URL, ConditionsViewModel.DEFAULT_URL)
             ?: ConditionsViewModel.DEFAULT_URL
 

@@ -16,6 +16,7 @@ import coil.load
 import com.pbcplume.tracker.R
 import com.pbcplume.tracker.data.model.SnorkelConditionsResponse
 import com.pbcplume.tracker.databinding.FragmentHomeBinding
+import com.pbcplume.tracker.ui.ConditionsViewModel
 import com.pbcplume.tracker.ui.SnorkelUiState
 import com.pbcplume.tracker.ui.SnorkelViewModel
 import com.pbcplume.tracker.util.SnorkelFormat
@@ -82,6 +83,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun bind(data: SnorkelConditionsResponse) {
+        // Demo mode banner
+        val prefs = requireContext().getSharedPreferences(ConditionsViewModel.PREF_FILE, 0)
+        val demoMode = prefs.getBoolean(ConditionsViewModel.PREF_DEMO_MODE, ConditionsViewModel.DEFAULT_DEMO_MODE)
+        binding.tvDemoModeBanner.visibility = if (demoMode) View.VISIBLE else View.GONE
+
         // Camera hero — default to Delray, otherwise the first available appearance
         val appearance = data.waterAppearance.find { it.cameraId == "delray" }
             ?: data.waterAppearance.firstOrNull()

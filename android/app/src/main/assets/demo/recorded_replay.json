@@ -1,0 +1,599 @@
+{
+  "generated_at_utc": "2026-09-18T16:53:35.480038Z",
+  "mode": "recorded_replay",
+  "mode_disclaimer": "Recorded replay from mixed sources. Each observation carries its own observed_at timestamp; these are not simultaneous or current conditions.",
+  "refresh_status": "idle",
+  "refresh_started_at": null,
+  "location": {
+    "lat": 26.53,
+    "lon": -80.052,
+    "label": "Boynton Inlet"
+  },
+  "cameras": [
+    {
+      "camera_id": "boynton_s6",
+      "location": "Boynton Inlet",
+      "view": "South view",
+      "page_url": "https://video-monitoring.com/beachcams/boyntoninlet/",
+      "source_url": "https://video-monitoring.com/beachcams/boyntoninlet/pics/s6/jul2126h/s071547w.jpg",
+      "fetched_at": "2026-09-14T17:10:21.823469Z",
+      "observed_at": "2026-09-07T19:47:50Z",
+      "observed_at_local": "Sep 7, 2026 at 3:47 PM",
+      "freshness": "stale",
+      "age_minutes": 9922.5,
+      "local_conditions_verified": false,
+      "status": "stale",
+      "error": null,
+      "visual_flags": [
+        "identical decoded pixels since previous run; not proof of a frozen camera"
+      ],
+      "image_url": null,
+      "image_width": 5184,
+      "image_height": 3456,
+      "mean_brightness": 131.8,
+      "limitations": [
+        "Required: maintenance text, fog, glare, camera pan and usable ocean area are not reliably classified automatically.",
+        "Capture time basis: provider latest.json timestamp (not HTTP retrieval time)"
+      ]
+    },
+    {
+      "camera_id": "boynton_s10",
+      "location": "Boynton Inlet",
+      "view": "North view",
+      "page_url": "https://video-monitoring.com/beachcams/boyntoninlet/",
+      "source_url": "https://video-monitoring.com/beachcams/boyntoninlet/pics/s10/jul1026u/s071551w.jpg",
+      "fetched_at": "2026-09-14T17:10:23.860779Z",
+      "observed_at": "2026-09-07T19:51:50Z",
+      "observed_at_local": "Sep 7, 2026 at 3:51 PM",
+      "freshness": "stale",
+      "age_minutes": 9918.6,
+      "local_conditions_verified": false,
+      "status": "unavailable",
+      "error": "image file is truncated (66 bytes not processed)",
+      "visual_flags": [],
+      "image_url": null,
+      "image_width": null,
+      "image_height": null,
+      "mean_brightness": null,
+      "limitations": [
+        "Capture time basis: provider latest.json timestamp (not HTTP retrieval time)"
+      ]
+    },
+    {
+      "camera_id": "boynton_s8",
+      "location": "Boynton Inlet",
+      "view": "East view",
+      "page_url": "https://video-monitoring.com/beachcams/boyntoninlet/",
+      "source_url": "https://video-monitoring.com/beachcams/boyntoninlet/pics/s8/aug2426l/s071533i.jpg",
+      "fetched_at": "2026-09-14T17:10:24.566052Z",
+      "observed_at": "2026-09-07T19:33:18Z",
+      "observed_at_local": "Sep 7, 2026 at 3:33 PM",
+      "freshness": "stale",
+      "age_minutes": 9937.1,
+      "local_conditions_verified": false,
+      "status": "stale",
+      "error": null,
+      "visual_flags": [
+        "identical decoded pixels since previous run; not proof of a frozen camera"
+      ],
+      "image_url": null,
+      "image_width": 5184,
+      "image_height": 3456,
+      "mean_brightness": 119.6,
+      "limitations": [
+        "Required: maintenance text, fog, glare, camera pan and usable ocean area are not reliably classified automatically.",
+        "Capture time basis: provider latest.json timestamp (not HTTP retrieval time)"
+      ]
+    },
+    {
+      "camera_id": "boynton_s4",
+      "location": "Boynton Inlet",
+      "view": "West view",
+      "page_url": "https://video-monitoring.com/beachcams/boyntoninlet/",
+      "source_url": "https://video-monitoring.com/beachcams/boyntoninlet/pics/s4/aug2526h/s071545u.jpg",
+      "fetched_at": "2026-09-14T17:10:27.398085Z",
+      "observed_at": "2026-09-07T19:45:46Z",
+      "observed_at_local": "Sep 7, 2026 at 3:45 PM",
+      "freshness": "stale",
+      "age_minutes": 9924.7,
+      "local_conditions_verified": false,
+      "status": "stale",
+      "error": null,
+      "visual_flags": [
+        "identical decoded pixels since previous run; not proof of a frozen camera"
+      ],
+      "image_url": null,
+      "image_width": 5184,
+      "image_height": 3456,
+      "mean_brightness": 130.4,
+      "limitations": [
+        "Required: maintenance text, fog, glare, camera pan and usable ocean area are not reliably classified automatically.",
+        "Capture time basis: provider latest.json timestamp (not HTTP retrieval time)"
+      ]
+    },
+    {
+      "camera_id": "lake_worth_s4",
+      "location": "Lake Worth Inlet",
+      "view": "North shore",
+      "page_url": "https://video-monitoring.com/beachcams/lakeworthinlet/",
+      "source_url": "https://video-monitoring.com/beachcams/lakeworthinlet/pics/s4/sep1326i/s141228f.jpg",
+      "fetched_at": "2026-09-14T17:10:30.090271Z",
+      "observed_at": "2026-09-14T16:28:11Z",
+      "observed_at_local": "Sep 14, 2026 at 12:28 PM",
+      "freshness": "stale",
+      "age_minutes": 42.3,
+      "local_conditions_verified": false,
+      "status": "stale",
+      "error": null,
+      "visual_flags": [
+        "identical decoded pixels since previous run; not proof of a frozen camera"
+      ],
+      "image_url": null,
+      "image_width": 5184,
+      "image_height": 3456,
+      "mean_brightness": 186.0,
+      "limitations": [
+        "Required: maintenance text, fog, glare, camera pan and usable ocean area are not reliably classified automatically.",
+        "Capture time basis: provider latest.json timestamp (not HTTP retrieval time)"
+      ]
+    },
+    {
+      "camera_id": "lake_worth_s6",
+      "location": "Lake Worth Inlet",
+      "view": "North shore zoom",
+      "page_url": "https://video-monitoring.com/beachcams/lakeworthinlet/",
+      "source_url": "https://video-monitoring.com/beachcams/lakeworthinlet/pics/s6/sep0826l/s141234w.jpg",
+      "fetched_at": "2026-09-14T17:10:33.058976Z",
+      "observed_at": "2026-09-14T16:34:50Z",
+      "observed_at_local": "Sep 14, 2026 at 12:34 PM",
+      "freshness": "stale",
+      "age_minutes": 35.7,
+      "local_conditions_verified": false,
+      "status": "stale",
+      "error": null,
+      "visual_flags": [
+        "identical decoded pixels since previous run; not proof of a frozen camera"
+      ],
+      "image_url": null,
+      "image_width": 5184,
+      "image_height": 3456,
+      "mean_brightness": 166.3,
+      "limitations": [
+        "Required: maintenance text, fog, glare, camera pan and usable ocean area are not reliably classified automatically.",
+        "Capture time basis: provider latest.json timestamp (not HTTP retrieval time)"
+      ]
+    },
+    {
+      "camera_id": "lake_worth_s8",
+      "location": "Lake Worth Inlet",
+      "view": "Inlet shot",
+      "page_url": "https://video-monitoring.com/beachcams/lakeworthinlet/",
+      "source_url": "https://video-monitoring.com/beachcams/lakeworthinlet/pics/s8/sep0826p/s141236l.jpg",
+      "fetched_at": "2026-09-14T17:10:44.034210Z",
+      "observed_at": "2026-09-14T16:36:25Z",
+      "observed_at_local": "Sep 14, 2026 at 12:36 PM",
+      "freshness": "stale",
+      "age_minutes": 34.3,
+      "local_conditions_verified": false,
+      "status": "stale",
+      "error": null,
+      "visual_flags": [
+        "identical decoded pixels since previous run; not proof of a frozen camera"
+      ],
+      "image_url": null,
+      "image_width": 5184,
+      "image_height": 3456,
+      "mean_brightness": 153.3,
+      "limitations": [
+        "Required: maintenance text, fog, glare, camera pan and usable ocean area are not reliably classified automatically.",
+        "Capture time basis: provider latest.json timestamp (not HTTP retrieval time)"
+      ]
+    },
+    {
+      "camera_id": "lake_worth_s12",
+      "location": "Lake Worth Inlet",
+      "view": "Inlet zoom",
+      "page_url": "https://video-monitoring.com/beachcams/lakeworthinlet/",
+      "source_url": "https://video-monitoring.com/beachcams/lakeworthinlet/pics/s12/sep1126m/s141237w.jpg",
+      "fetched_at": "2026-09-14T17:10:48.203106Z",
+      "observed_at": "2026-09-14T16:37:50Z",
+      "observed_at_local": "Sep 14, 2026 at 12:37 PM",
+      "freshness": "stale",
+      "age_minutes": 33.0,
+      "local_conditions_verified": false,
+      "status": "stale",
+      "error": null,
+      "visual_flags": [
+        "identical decoded pixels since previous run; not proof of a frozen camera"
+      ],
+      "image_url": null,
+      "image_width": 5184,
+      "image_height": 3456,
+      "mean_brightness": 179.7,
+      "limitations": [
+        "Required: maintenance text, fog, glare, camera pan and usable ocean area are not reliably classified automatically.",
+        "Capture time basis: provider latest.json timestamp (not HTTP retrieval time)"
+      ]
+    },
+    {
+      "camera_id": "lake_worth_s16",
+      "location": "Lake Worth Inlet",
+      "view": "North east view",
+      "page_url": "https://video-monitoring.com/beachcams/lakeworthinlet/",
+      "source_url": "https://video-monitoring.com/beachcams/lakeworthinlet/pics/s16/sep1326j/s141252h.jpg",
+      "fetched_at": "2026-09-14T17:10:51.516537Z",
+      "observed_at": "2026-09-14T16:52:16Z",
+      "observed_at_local": "Sep 14, 2026 at 12:52 PM",
+      "freshness": "fresh",
+      "age_minutes": 18.6,
+      "local_conditions_verified": false,
+      "status": "fresh_image_review_needed",
+      "error": null,
+      "visual_flags": [],
+      "image_url": null,
+      "image_width": 5184,
+      "image_height": 3456,
+      "mean_brightness": 182.2,
+      "limitations": [
+        "Required: maintenance text, fog, glare, camera pan and usable ocean area are not reliably classified automatically.",
+        "Capture time basis: provider latest.json timestamp (not HTTP retrieval time)"
+      ]
+    },
+    {
+      "camera_id": "delray",
+      "location": "Delray Beach",
+      "view": "Stream from existing plume POC",
+      "page_url": "https://streamer5.brownrice.com/delraybeach1/delraybeach1.stream/main_playlist.m3u8",
+      "source_url": null,
+      "fetched_at": "2026-09-14T17:10:54.636309Z",
+      "observed_at": null,
+      "observed_at_local": null,
+      "freshness": "unknown",
+      "age_minutes": null,
+      "local_conditions_verified": false,
+      "status": "stream_advancing_capture_unverified",
+      "error": null,
+      "visual_flags": [],
+      "image_url": null,
+      "image_width": 1280,
+      "image_height": 720,
+      "mean_brightness": 119.6,
+      "limitations": [
+        "Required: maintenance text, fog, glare, camera pan and usable ocean area are not reliably classified automatically.",
+        "Capture time basis: Not verified; HLS delivery progression is not a capture timestamp"
+      ]
+    }
+  ],
+  "water_appearance": [
+    {
+      "camera_id": "lake_worth_s16",
+      "location": "Lake Worth Inlet",
+      "headline": "Predominantly blue / green",
+      "source_url": "https://video-monitoring.com/beachcams/lakeworthinlet/pics/s16/sep1326j/s141252h.jpg",
+      "error": null,
+      "image_url": "file:///android_asset/demo/appearance/lake_worth_s16.jpg",
+      "fetched_at": "2026-09-14T17:10:51.516537Z",
+      "observed_at": "2026-09-14T16:52:16Z",
+      "observed_at_local": "Sep 14, 2026 at 12:52 PM",
+      "samples": [
+        {
+          "region": "Nearshore",
+          "bounds": [
+            0.65,
+            0.75,
+            0.93,
+            0.88
+          ],
+          "warm_percent": 0.0,
+          "blue_green_percent": 100.0,
+          "other_percent": 0.0,
+          "mean_rgb": [
+            92.8,
+            171.8,
+            187.7
+          ],
+          "pixels": 651499
+        },
+        {
+          "region": "Farther out",
+          "bounds": [
+            0.12,
+            0.52,
+            0.4,
+            0.63
+          ],
+          "warm_percent": 0.0,
+          "blue_green_percent": 100.0,
+          "other_percent": 0.0,
+          "mean_rgb": [
+            95.0,
+            172.8,
+            203.9
+          ],
+          "pixels": 551760
+        }
+      ],
+      "framing_verified": true,
+      "current_direction": null,
+      "underwater_visibility": null,
+      "status": "recorded; manual review needed",
+      "limitations": [
+        "Exploratory HSV colour bins in manually selected water-only rectangles",
+        "ROI manually selected; pan or framing change requires review."
+      ]
+    },
+    {
+      "camera_id": "delray",
+      "location": "Delray Beach",
+      "headline": "Predominantly blue / green",
+      "source_url": "https://streamer5.brownrice.com/delraybeach1/delraybeach1.stream/main_playlist.m3u8",
+      "error": null,
+      "image_url": "file:///android_asset/demo/appearance/delray.jpg",
+      "fetched_at": "2026-09-14T17:10:54.636309Z",
+      "observed_at": null,
+      "observed_at_local": "Stream retrieved 2026-09-14T17:10:54.636309+00:00; capture time unverified",
+      "samples": [
+        {
+          "region": "Nearshore",
+          "bounds": [
+            0.65,
+            0.64,
+            0.96,
+            0.7
+          ],
+          "warm_percent": 0.0,
+          "blue_green_percent": 95.0,
+          "other_percent": 5.0,
+          "mean_rgb": [
+            94.8,
+            110.6,
+            122.5
+          ],
+          "pixels": 17071
+        },
+        {
+          "region": "Farther out",
+          "bounds": [
+            0.65,
+            0.39,
+            0.96,
+            0.49
+          ],
+          "warm_percent": 0.0,
+          "blue_green_percent": 100.0,
+          "other_percent": 0.0,
+          "mean_rgb": [
+            86.8,
+            108.8,
+            132.7
+          ],
+          "pixels": 28584
+        }
+      ],
+      "framing_verified": true,
+      "current_direction": null,
+      "underwater_visibility": null,
+      "status": "recorded; manual review needed",
+      "limitations": [
+        "Exploratory HSV colour bins in manually selected water-only rectangles",
+        "ROI manually selected; pan or framing change requires review."
+      ]
+    }
+  ],
+  "weather": {
+    "reference_time_utc": "2026-09-14T14:21:46.652772Z",
+    "reference_time_local": null,
+    "source": "Open-Meteo weather model estimates and forecasts; not a rain gauge",
+    "recent_24h": {
+      "date": null,
+      "label": null,
+      "start_utc": "2026-09-13T14:00:00Z",
+      "end_utc": "2026-09-14T14:00:00Z",
+      "mm": 9.0,
+      "inches": 0.354,
+      "category": "LIGHT RAIN",
+      "status": "complete"
+    },
+    "forward_24h": {
+      "date": null,
+      "label": null,
+      "start_utc": "2026-09-14T14:00:00Z",
+      "end_utc": "2026-09-15T14:00:00Z",
+      "mm": 0.4,
+      "inches": 0.016,
+      "category": "LITTLE OR NO RAIN",
+      "status": "complete"
+    },
+    "wind": {
+      "time_utc": "2026-09-14T14:00:00Z",
+      "time_local": null,
+      "speed_kn": 0.5,
+      "speed_mph": 0.58,
+      "gust_kn": 4.3,
+      "gust_mph": 4.9,
+      "from_degrees": 135.0,
+      "from_compass": "SE",
+      "toward_degrees": 315.0,
+      "toward_compass": "NW",
+      "preferred": false,
+      "preferred_label": "Check wind alongside the camera",
+      "status": "available"
+    },
+    "daily_outlook": [
+      {
+        "date": "2026-09-14",
+        "label": "Today (whole day)",
+        "start_utc": null,
+        "end_utc": null,
+        "mm": 0.0,
+        "inches": 0.0,
+        "category": "LITTLE OR NO RAIN",
+        "status": "available"
+      },
+      {
+        "date": "2026-09-15",
+        "label": "2026-09-15",
+        "start_utc": null,
+        "end_utc": null,
+        "mm": 0.4,
+        "inches": 0.016,
+        "category": "LITTLE OR NO RAIN",
+        "status": "available"
+      },
+      {
+        "date": "2026-09-16",
+        "label": "2026-09-16",
+        "start_utc": null,
+        "end_utc": null,
+        "mm": 8.4,
+        "inches": 0.331,
+        "category": "LIGHT RAIN",
+        "status": "available"
+      },
+      {
+        "date": "2026-09-17",
+        "label": "2026-09-17",
+        "start_utc": null,
+        "end_utc": null,
+        "mm": 9.0,
+        "inches": 0.354,
+        "category": "LIGHT RAIN",
+        "status": "available"
+      },
+      {
+        "date": "2026-09-18",
+        "label": "2026-09-18",
+        "start_utc": null,
+        "end_utc": null,
+        "mm": 8.5,
+        "inches": 0.335,
+        "category": "LIGHT RAIN",
+        "status": "available"
+      },
+      {
+        "date": "2026-09-19",
+        "label": "2026-09-19",
+        "start_utc": null,
+        "end_utc": null,
+        "mm": 6.5,
+        "inches": 0.256,
+        "category": "LIGHT RAIN",
+        "status": "available"
+      },
+      {
+        "date": "2026-09-20",
+        "label": "2026-09-20",
+        "start_utc": null,
+        "end_utc": null,
+        "mm": 0.9,
+        "inches": 0.035,
+        "category": "LITTLE OR NO RAIN",
+        "status": "available"
+      }
+    ],
+    "limitations": [
+      "Not measured. Rainfall alone does not establish runoff, water clarity or swimming safety.",
+      "Experimental amount bands retained from the original POC; not validated runoff thresholds.",
+      "Wind is a 10 m model estimate; direction is FROM."
+    ]
+  },
+  "algae": {
+    "source_filename": "c20261782026184.1KM.GCOOS.7DAY.L3D.FAD.png",
+    "period_start": "2026-06-27",
+    "period_end": "2026-07-03",
+    "product": "FAD",
+    "composite": "7DAY",
+    "nominal_resolution_m": 1000,
+    "source_url": "https://optics.marine.usf.edu/cgi-bin/optics_data?roi=GCOOS&Date=7/3/2026",
+    "source_image_url": "https://optics.marine.usf.edu/subscription/multi_sensor_fusion/GCOOS/2026/comp/184/c20261782026184.1KM.GCOOS.7DAY.L3D.FAD.png",
+    "source_legend_url": "https://optics.marine.usf.edu/images/cb/colorbar_fa_density_0.0_to_0.4.png",
+    "source_bounds_wsen": [
+      -98.0,
+      18.0,
+      -79.0,
+      31.0
+    ],
+    "regions": [
+      {
+        "name": "Boynton Delray",
+        "status": "OFFSHORE ALGAE SIGNAL PRESENT",
+        "image_url": "file:///android_asset/demo/sargassum/boynton_delray.png",
+        "colored_pixels_pct_of_recognized_water": 38.23,
+        "recognized_water_pixels_pct": 94.12,
+        "requested_bounds_wsen": [
+          -80.15,
+          26.3,
+          -79.85,
+          26.7
+        ],
+        "crop_ltrb_exclusive": [
+          1963,
+          473,
+          1997,
+          517
+        ],
+        "interpretation": "Color matches are an exploratory rendered-image proxy, not measured algae coverage percent, biomass or beach severity. Blue background is not proof of algae-free water. Black and unmatched pixels remain unknown."
+      },
+      {
+        "name": "Palm Beach To Miami",
+        "status": "OFFSHORE ALGAE SIGNAL PRESENT",
+        "image_url": "file:///android_asset/demo/sargassum/palm_beach_to_miami.png",
+        "colored_pixels_pct_of_recognized_water": 46.59,
+        "recognized_water_pixels_pct": 98.2,
+        "requested_bounds_wsen": [
+          -80.4,
+          25.5,
+          -79.7,
+          27.0
+        ],
+        "crop_ltrb_exclusive": [
+          1936,
+          440,
+          2013,
+          605
+        ],
+        "interpretation": "Color matches are an exploratory rendered-image proxy, not measured algae coverage percent, biomass or beach severity. Blue background is not proof of algae-free water. Black and unmatched pixels remain unknown."
+      }
+    ],
+    "limitations": [
+      "Historical image: composite ended 73 days ago.",
+      "Sargassum status is a rendered-image color match; not measured density, biomass or beach severity."
+    ]
+  },
+  "c16": {
+    "live_flow": null,
+    "info_url": "https://www.sfwmd.gov/",
+    "notes": "Live discharge is not measured here."
+  },
+  "surface_motion": {
+    "developer_only": true,
+    "location": "Delray Beach",
+    "acquisition_id": null,
+    "observed_at": null,
+    "retrieved_at": null,
+    "analyzed_at": null,
+    "fetched_at": null,
+    "direction": "northward",
+    "evidence_strength": "likely",
+    "freshness": "recorded",
+    "reason": null,
+    "orientation_verified": true,
+    "regions_image_url": "file:///android_asset/demo/motion/regions.jpg",
+    "clip_url": null,
+    "user_label": "Likely northward \u00b7 recorded reference, not live",
+    "automated_observation": "Leftward ripple/reflection movement in the recorded northward reference clip.",
+    "interpretation": "Recorded reference only; this is not a live camera reading. The reference demonstrates northward surface flow in the three reflection patches. No measured speed; validate live examples before relying on the indicator.",
+    "status": "experimental; recorded reference",
+    "limitations": [
+      "Reference clip only; validate orientation, texture and south/weak/panning examples before live use.",
+      "Do not use sign agreement alone as confidence."
+    ]
+  },
+  "limitations": [
+    "Image colour thresholds are exploratory.",
+    "Weather is a model estimate, not a rain gauge.",
+    "Sargassum detection is a rendered-image color proxy, not measured biomass or beach severity.",
+    "Surface motion is experimental and developer-only.",
+    "C-16 live discharge is not measured here."
+  ]
+}
