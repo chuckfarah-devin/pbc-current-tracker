@@ -17,10 +17,28 @@ pip install -r requirements.txt
 # Optional: copy config
 cp .env.example .env
 
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
+Use `--host 0.0.0.0` so phones on the same Wi-Fi can reach the server. If you only need local development, you can omit `--host`.
+
 Interactive API docs: **http://localhost:8000/docs**
+
+### Connecting an Android phone
+
+1. Make sure the PC and phone are on the same Wi-Fi network.
+2. Find the PC's local IP address:
+   ```powershell
+   Get-NetIPAddress -AddressFamily IPv4 |
+       Where-Object {$_.IPAddress -like "192.168*" -or $_.IPAddress -like "10.*" -or $_.IPAddress -like "172.*"} |
+       Select-Object IPAddress, InterfaceAlias
+   ```
+3. In the app, go to **Settings → Data source → Live** and enter:
+   ```
+   http://<pc-ip>:8000
+   ```
+   For example: `http://192.168.1.249:8000`
+4. If the phone cannot connect, check Windows Firewall and allow Python to accept incoming connections on private networks.
 
 ## Endpoints
 
