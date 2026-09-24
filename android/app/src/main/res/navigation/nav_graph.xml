@@ -9,6 +9,8 @@
         android:label="@string/title_home">
         <action android:id="@+id/action_home_to_settings"
             app:destination="@id/settingsFragment" />
+        <action android:id="@+id/action_home_to_map"
+            app:destination="@id/mapFragment" />
     </fragment>
 
     <fragment android:id="@+id/mapFragment"
@@ -16,6 +18,10 @@
         android:label="@string/title_map">
         <action android:id="@+id/action_map_to_settings"
             app:destination="@id/settingsFragment" />
+        <action android:id="@+id/action_map_to_home"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true" />
         <action android:id="@+id/action_map_to_debug"
             app:destination="@id/debugFragment" />
     </fragment>

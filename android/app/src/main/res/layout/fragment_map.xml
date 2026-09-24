@@ -1,140 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <!-- Mapbox MapView -->
-    <com.mapbox.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <!-- Clarity color overlay (semi-transparent, teal to brown by score) -->
-    <View
-        android:id="@+id/viewClarityOverlay"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_gravity="center"
-        android:alpha="0.45"
-        android:background="@drawable/circle_overlay" />
-
-    <!-- Current direction arrow + speed -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/groupCurrentArrow"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="130dp"
-        android:visibility="invisible"
-        app:layout_anchorGravity="center">
-
-        <ImageView
-            android:id="@+id/ivCurrentArrow"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/cd_current_arrow"
-            android:src="@drawable/ic_arrow_up"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:tint="@color/current_arrow" />
-
-        <TextView
-            android:id="@+id/tvCurrentSpeed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/current_arrow"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivCurrentArrow" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- Snorkel index badge (top-centre) -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardSnorkel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="6dp">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="8dp">
-
-            <TextView
-                android:id="@+id/tvSnorkelScore"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="--"
-                android:textColor="@android:color/white"
-                android:textSize="28sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvSnorkelLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/loading"
-                android:textColor="@android:color/white"
-                android:textSize="12sp" />
-
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- Loading spinner -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_margin="16dp"
-        android:visibility="gone" />
-
-    <!-- Bottom action buttons -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@android:color/transparent"
-        android:orientation="horizontal"
-        android:padding="16dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDetails"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="@string/btn_conditions" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabRefresh"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/cd_refresh"
-            android:src="@android:drawable/ic_popup_sync" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSettings"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="@string/btn_settings" />
-
-    </LinearLayout>
-
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#DDEFF1">
+<com.pbcplume.tracker.ui.map.MapPreviewView android:id="@+id/mapPreview" android:layout_width="match_parent" android:layout_height="match_parent" android:contentDescription="Offline sourced map with camera markers"/>
+<LinearLayout android:layout_width="match_parent" android:layout_height="58dp" android:layout_gravity="top" android:background="#FAFFFFFF" android:gravity="center_vertical" android:orientation="horizontal" android:paddingHorizontal="14dp">
+<ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/ic_snorkel_mask" android:contentDescription="@string/title_home"/>
+<TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="8dp" android:text="PBC Snorkel" android:textColor="#0B3040" android:textSize="18sp" android:textStyle="bold"/>
+<com.google.android.material.button.MaterialButtonToggleGroup android:id="@+id/viewToggle" android:layout_width="wrap_content" android:layout_height="38dp" app:checkedButton="@id/btnMapMode" app:selectionRequired="true" app:singleSelection="true">
+<com.google.android.material.button.MaterialButton android:id="@+id/btnMapMode" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="62dp" android:layout_height="38dp" android:minWidth="0dp" android:paddingHorizontal="4dp" android:text="Map" android:textColor="#005E66" android:textSize="13sp"/>
+<com.google.android.material.button.MaterialButton android:id="@+id/btnCameraMode" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="86dp" android:layout_height="38dp" android:minWidth="0dp" android:paddingHorizontal="4dp" android:text="Camera" android:textColor="#005E66" android:textSize="13sp"/>
+</com.google.android.material.button.MaterialButtonToggleGroup></LinearLayout>
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="top|start" android:layout_marginStart="14dp" android:layout_marginTop="70dp" android:background="@drawable/bg_banner" android:paddingHorizontal="10dp" android:paddingVertical="5dp" android:text="DEMO · SIMULATED" android:textColor="#335E69" android:textSize="10sp" android:textStyle="bold"/>
+<LinearLayout android:layout_width="48dp" android:layout_height="wrap_content" android:layout_gravity="top|end" android:layout_marginTop="70dp" android:layout_marginEnd="12dp" android:orientation="vertical">
+<ImageButton android:id="@+id/btnZoomIn" android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_map_control" android:contentDescription="Zoom in" android:src="@drawable/ic_add"/>
+<ImageButton android:id="@+id/btnZoomOut" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginTop="8dp" android:background="@drawable/bg_map_control" android:contentDescription="Zoom out" android:src="@drawable/ic_remove"/>
+<ImageButton android:id="@+id/btnShowAll" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginTop="8dp" android:background="@drawable/bg_map_control" android:contentDescription="Show all cameras" android:src="@drawable/ic_map"/>
+<ImageButton android:id="@+id/btnRecenter" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginTop="8dp" android:background="@drawable/bg_map_control" android:contentDescription="Recenter selected camera" android:src="@drawable/ic_recenter"/>
+</LinearLayout>
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="bottom|end" android:layout_marginEnd="12dp" android:layout_marginBottom="220dp" android:background="#EFFFFFFF" android:padding="4dp" android:text="Offline map · FWC Open Data" android:textColor="#335E69" android:textSize="9sp"/>
+<com.google.android.material.card.MaterialCardView android:id="@+id/cardConditions" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom" android:layout_margin="12dp" app:cardBackgroundColor="#FFFFFF" app:cardCornerRadius="24dp" app:cardElevation="12dp" app:strokeColor="#0B5670" app:strokeWidth="1dp">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical"><TextView android:id="@+id/tvLocation" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#0B3040" android:textSize="20sp" android:textStyle="bold"/><TextView android:id="@+id/tvMunicipality" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#557480" android:textSize="12sp"/></LinearLayout>
+<TextView android:id="@+id/tvRating" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_rating_good" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:textStyle="bold"/>
+<ImageButton android:id="@+id/btnScenarioMenu" android:layout_width="40dp" android:layout_height="40dp" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="Choose demo scenario" android:src="@drawable/ic_more_vert"/>
+<ImageButton android:id="@+id/btnExpand" android:layout_width="40dp" android:layout_height="40dp" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="Expand details" android:src="@drawable/ic_expand_more"/>
+</LinearLayout>
+<TextView android:id="@+id/tvCompactConditions" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="9dp" android:textColor="#0B3040" android:textSize="14sp" android:textStyle="bold"/>
+<TextView android:id="@+id/tvCompactEvidence" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:ellipsize="end" android:maxLines="1" android:textColor="#335E69" android:textSize="13sp"/>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:orientation="horizontal"><com.google.android.material.button.MaterialButton android:id="@+id/btnOpenCamera" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Open camera" android:textColor="#006A70" app:icon="@drawable/ic_camera_preview" app:iconTint="#006A70"/><com.google.android.material.button.MaterialButton android:id="@+id/btnDetails" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Details" android:textColor="#006A70"/></LinearLayout>
+<ScrollView android:id="@+id/groupDetails" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:visibility="gone"><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+<View android:layout_width="match_parent" android:layout_height="1dp" android:background="#D7E4EA"/>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
+<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="WIND" android:textColor="#006A70" android:textSize="10sp" android:textStyle="bold"/><TextView android:id="@+id/tvWind" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#0B3040" android:textStyle="bold"/></LinearLayout>
+<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RAIN · 24 H" android:textColor="#0D47A1" android:textSize="10sp" android:textStyle="bold"/><TextView android:id="@+id/tvRain" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#0B3040" android:textStyle="bold"/></LinearLayout>
+<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SURFACE" android:textColor="#006A70" android:textSize="10sp" android:textStyle="bold"/><TextView android:id="@+id/tvMotion" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#0B3040" android:textStyle="bold"/></LinearLayout></LinearLayout>
+<TextView android:id="@+id/tvAppearance" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:textColor="#0B3040"/>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="9dp" android:gravity="center_vertical" android:orientation="horizontal"><ImageView android:id="@+id/ivSargassum" android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_sargassum" android:contentDescription="@null"/><LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:layout_weight="1" android:orientation="vertical"><TextView android:id="@+id/tvSargassum" android:layout_width="match_parent" android:layout_height="wrap_content" android:textStyle="bold"/><TextView android:id="@+id/tvSargassumDate" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#557480" android:textSize="11sp"/></LinearLayout></LinearLayout>
+<TextView android:id="@+id/tvReason" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="9dp" android:textColor="#557480" android:textSize="12sp"/>
+</LinearLayout></ScrollView>
+</LinearLayout></com.google.android.material.card.MaterialCardView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

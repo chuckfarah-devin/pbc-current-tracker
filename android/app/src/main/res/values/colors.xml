@@ -14,6 +14,7 @@
     <color name="snorkel_error">#B3261E</color>
     <color name="snorkel_wind">#006064</color>
     <color name="snorkel_rain">#0D47A1</color>
+    <color name="snorkel_sargassum">#C62828</color>
 
     <!-- Material attribute backing -->
     <color name="md_theme_primary">#006064</color>
