@@ -10,31 +10,38 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.pbcplume.tracker.R
 import com.pbcplume.tracker.databinding.FragmentMapBinding
+import com.pbcplume.tracker.ui.BeachLocation
+import com.pbcplume.tracker.ui.BeachLocations
+import com.pbcplume.tracker.ui.ConditionsViewModel
+import com.pbcplume.tracker.ui.LiveLocationViewModel
+import com.pbcplume.tracker.ui.LocationSelectionViewModel
+import com.pbcplume.tracker.ui.LocationWeatherState
+import com.pbcplume.tracker.ui.SnorkelUiState
+import com.pbcplume.tracker.ui.SnorkelViewModel
+import kotlinx.coroutines.launch
 
 class MapFragment : Fragment() {
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
-    private data class Location(val id: String, val name: String, val municipality: String, val lat: Double, val lon: Double, val cameraUrl: String, val viewOnly: Boolean = false)
     private enum class Scenario { GOOD, FAIR, VIEW_ONLY }
 
-    private val locations = listOf(
-        Location("jupiter", "Jupiter Beach", "Jupiter · beach-facing view to verify", 26.9400, -80.0700, "https://video-monitoring.com/beachcams/jupiter/"),
-        Location("singer", "Singer Island Beach", "Riviera Beach", 26.7910, -80.0335, "https://www.thesingerresort.com/live-webcam/", true),
-        Location("boynton", "Boynton Inlet", "South Lake Worth Inlet · inlet context", 26.5456, -80.0428, "https://video-monitoring.com/beachcams/boyntoninlet/"),
-        Location("delray", "Delray Municipal Beach", "Delray Beach · default location", 26.4616, -80.0585, "https://live1.brownrice.com/embed/delraybeach1"),
-        Location("boca", "South Beach Park", "Boca Raton", 26.3540, -80.0699, "https://video-monitoring.com/beachcams/boca/slideshow.htm?station=Main+Shot"),
-        Location("ebb", "Ebb Tide Resort", "Pompano Beach · view-only camera", 26.2295, -80.0899, "https://ebbtideresort.com/ebb-tide-resort-live-beach-cam/", true),
-        Location("hilton", "Hilton Beach House", "Fort Lauderdale · view-only camera", 26.1329, -80.1049, "https://www.fllbeachcam.com/", true),
-        Location("courtyard", "Courtyard Beach", "Fort Lauderdale · view-only camera", 26.1174, -80.1056, "https://seetheview.com/cam/580/fort-lauderdale-beach-live-cam", true)
-    )
-
-    private var selected = locations.first { it.id == "delray" }
+    private val locations = BeachLocations.all
+    private val locationSelection: LocationSelectionViewModel by activityViewModels()
+    private val conditions: SnorkelViewModel by activityViewModels()
+    private val liveLocation: LiveLocationViewModel by activityViewModels()
+    private var selected = BeachLocations.get("delray")
     private var scenario = Scenario.GOOD
     private var expanded = false
+    private var conditionsState: SnorkelUiState = SnorkelUiState.Loading
+    private var weatherState = LocationWeatherState("delray", "unavailable")
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
         _binding = FragmentMapBinding.inflate(inflater, container, false)
@@ -60,12 +67,49 @@ class MapFragment : Fragment() {
         binding.btnShowAll.setOnClickListener { binding.mapPreview.showAll() }
         binding.btnRecenter.setOnClickListener { centerSelected() }
         binding.btnScenarioMenu.setOnClickListener { showScenarioMenu(it) }
-        binding.mapPreview.post { centerSelected() }
+        selected = locationSelection.selected
+        binding.mapPreview.selectedId = selected.id
+        binding.mapPreview.post {
+            locationSelection.mapViewport?.let(binding.mapPreview::restoreViewport) ?: centerSelected()
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                conditions.uiState.collect {
+                    conditionsState = it
+                    render()
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                liveLocation.weather.collect {
+                    weatherState = it
+                    render()
+                }
+            }
+        }
+        liveLocation.load(selected)
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                locationSelection.selectedId.collect { id ->
+                    if (selected.id != id) {
+                        selected = BeachLocations.get(id)
+                        scenario = if (selected.viewOnly) Scenario.VIEW_ONLY else Scenario.GOOD
+                        binding.mapPreview.selectedId = id
+                        liveLocation.load(selected)
+                        render()
+                        binding.mapPreview.post { centerSelected() }
+                    }
+                }
+            }
+        }
         render()
     }
 
-    private fun selectLocation(location: Location) {
+    private fun selectLocation(location: BeachLocation) {
         selected = location
+        locationSelection.select(location.id)
+        liveLocation.load(location)
         scenario = if (location.viewOnly) Scenario.VIEW_ONLY else Scenario.GOOD
         expanded = false
         binding.mapPreview.selectedId = location.id
@@ -95,6 +139,7 @@ class MapFragment : Fragment() {
                     else -> { selected = locations.first { item -> item.id == "hilton" }; scenario = Scenario.VIEW_ONLY }
                 }
                 expanded = false
+                locationSelection.select(selected.id)
                 binding.mapPreview.selectedId = selected.id
                 render()
                 binding.mapPreview.post { centerSelected() }
@@ -105,9 +150,17 @@ class MapFragment : Fragment() {
     }
 
     private fun render() = with(binding) {
+        val prefs = requireContext().getSharedPreferences(ConditionsViewModel.PREF_FILE, 0)
+        val demoMode = prefs.getBoolean(ConditionsViewModel.PREF_DEMO_MODE, ConditionsViewModel.DEFAULT_DEMO_MODE)
         tvLocation.text = selected.name
         tvMunicipality.text = selected.municipality
-        when (scenario) {
+        tvMapMode.text = if (demoMode) "DEMO · SIMULATED" else "LIVE · NO RATING"
+        btnScenarioMenu.visibility = if (demoMode) View.VISIBLE else View.GONE
+        if (!demoMode) {
+            renderLive()
+        } else if (selected.id != "delray") {
+            renderDemoLocation()
+        } else when (scenario) {
             Scenario.GOOD -> {
                 rating("Good", "#BFE8D3", "#145037")
                 tvCompactConditions.text = "W 7 mph · Rain 0.02 in · Northward"
@@ -148,6 +201,54 @@ class MapFragment : Fragment() {
         mapPreview.selectedId = selected.id
     }
 
+    private fun renderDemoLocation() = with(binding) {
+        rating("Not rated", "#E4F0F3", "#405B66")
+        tvCompactConditions.text = "Recorded local observations unavailable"
+        tvCompactEvidence.text = if (selected.viewOnly) "View-only camera · open provider" else "No bundled local imagery"
+        tvWind.text = "Unavailable"
+        tvRain.text = "Unavailable"
+        tvMotion.text = "Unavailable"
+        tvAppearance.text = "No imagery or analysis from another location is substituted."
+        sargassum(false, "Offshore sargassum context", "Recorded regional composite")
+        tvReason.text = "Offline Demo contains no location-specific observation bundle for ${selected.name}."
+    }
+
+    private fun renderLive() = with(binding) {
+        rating("Not rated", "#E4F0F3", "#405B66")
+        val data = (conditionsState as? SnorkelUiState.Success)?.data
+        val camera = data?.cameras?.firstOrNull { it.cameraId in selected.cameraIds }
+        val localWeather = weatherState.takeIf { it.locationId == selected.id }
+        val checking = localWeather?.status == "checking" || conditionsState is SnorkelUiState.Loading || data?.refreshStatus == "running"
+        val wind = localWeather?.windMph?.let { speed -> "${compass(localWeather.windFromDegrees)} %.1f mph".format(speed) }
+        val rain = localWeather?.rain24hInches?.let { "%.2f in".format(it) }
+        val health = when {
+            checking -> "Camera checking"
+            camera == null && selected.viewOnly -> "View-only · open provider"
+            camera == null -> "Camera unavailable"
+            camera.status == "cached" || camera.freshness == "stale" -> "Camera cached"
+            else -> "Camera ${camera.status.replace('_', ' ')}"
+        }
+        tvCompactConditions.text = listOfNotNull(wind, rain, health).joinToString(" · ").ifBlank { "Checking location observations…" }
+        tvCompactEvidence.text = "Local weather ${localWeather?.status ?: "unavailable"} · $health"
+        tvWind.text = wind ?: if (checking) "Checking" else "Unavailable"
+        tvRain.text = rain ?: if (checking) "Checking" else "Unavailable"
+        tvMotion.text = if (selected.motionSupported && data?.surfaceMotion != null) data.surfaceMotion.direction.replaceFirstChar { it.uppercase() } else "Unavailable"
+        tvAppearance.text = when {
+            selected.viewOnly -> "In-app imagery unsupported · use Open camera"
+            camera != null -> "Camera health: $health"
+            else -> "No supported imagery is available for this location"
+        }
+        val algae = data?.algae
+        sargassum(false, "Offshore sargassum context", algae?.periodEnd?.let { "Composite ended $it" } ?: "Unavailable")
+        tvReason.text = "Live observations are source-specific. Missing or non-local values remain unavailable; no rating is calculated."
+    }
+
+    private fun compass(degrees: Double?): String {
+        if (degrees == null) return "—"
+        val points = listOf("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+        return points[((degrees + 22.5) / 45.0).toInt() % points.size]
+    }
+
     private fun rating(text: String, background: String, foreground: String) {
         binding.tvRating.text = text
         binding.tvRating.setTextColor(Color.parseColor(foreground))
@@ -162,7 +263,7 @@ class MapFragment : Fragment() {
         binding.tvSargassumDate.text = date
     }
 
-    private fun shortLabel(location: Location) = when (location.id) {
+    private fun shortLabel(location: BeachLocation) = when (location.id) {
         "jupiter" -> "Jupiter Beach"
         "singer" -> "Singer Island"
         "boynton" -> "Boynton Inlet"
@@ -171,6 +272,11 @@ class MapFragment : Fragment() {
         "ebb" -> "Ebb Tide"
         "hilton" -> "Hilton"
         else -> "Courtyard"
+    }
+
+    override fun onStop() {
+        locationSelection.mapViewport = binding.mapPreview.viewport()
+        super.onStop()
     }
 
     override fun onDestroyView() { super.onDestroyView(); _binding = null }

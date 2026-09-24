@@ -12,6 +12,7 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import com.pbcplume.tracker.ui.MapViewport
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.hypot
@@ -115,6 +116,16 @@ class MapPreviewView @JvmOverloads constructor(context: Context, attrs: Attribut
         scale = 1f
         offsetX = 0f
         offsetY = 0f
+        invalidate()
+    }
+
+    fun viewport() = MapViewport(scale, offsetX, offsetY)
+
+    fun restoreViewport(viewport: MapViewport) {
+        scale = viewport.scale.coerceIn(1f, 3.2f)
+        offsetX = viewport.offsetX
+        offsetY = viewport.offsetY
+        clampOffsets()
         invalidate()
     }
 

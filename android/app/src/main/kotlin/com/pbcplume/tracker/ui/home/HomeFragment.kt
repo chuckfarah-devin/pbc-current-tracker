@@ -16,7 +16,11 @@ import coil.load
 import com.pbcplume.tracker.R
 import com.pbcplume.tracker.data.model.SnorkelConditionsResponse
 import com.pbcplume.tracker.databinding.FragmentHomeBinding
+import com.pbcplume.tracker.ui.BeachLocations
 import com.pbcplume.tracker.ui.ConditionsViewModel
+import com.pbcplume.tracker.ui.LiveLocationViewModel
+import com.pbcplume.tracker.ui.LocationSelectionViewModel
+import com.pbcplume.tracker.ui.LocationWeatherState
 import com.pbcplume.tracker.ui.SnorkelUiState
 import com.pbcplume.tracker.ui.SnorkelViewModel
 import com.pbcplume.tracker.util.SnorkelFormat
@@ -29,7 +33,10 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: SnorkelViewModel by activityViewModels()
+    private val locationSelection: LocationSelectionViewModel by activityViewModels()
+    private val liveLocation: LiveLocationViewModel by activityViewModels()
     private var currentConditions: SnorkelConditionsResponse? = null
+    private var weatherState = LocationWeatherState("delray", "unavailable")
     private var selectedCameraId: String? = null
 
     override fun onCreateView(
@@ -42,7 +49,10 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.btnRefresh.setOnClickListener { viewModel.refresh() }
+        binding.btnRefresh.setOnClickListener {
+            viewModel.refresh()
+            liveLocation.load(locationSelection.selected, force = true)
+        }
         binding.btnMap.setOnClickListener { findNavController().navigate(R.id.action_home_to_map) }
         binding.btnSeeEvidence.setOnClickListener { openEvidenceSheet() }
         binding.btnOpenSfwmd.setOnClickListener { openSfwmd() }
@@ -51,6 +61,22 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state -> render(state) }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                locationSelection.selectedId.collect {
+                    liveLocation.load(locationSelection.selected)
+                    currentConditions?.let(::bind)
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                liveLocation.weather.collect {
+                    weatherState = it
+                    currentConditions?.let(::bind)
+                }
             }
         }
         viewLifecycleOwner.lifecycleScope.launch {
@@ -89,11 +115,9 @@ class HomeFragment : Fragment() {
         val demoMode = prefs.getBoolean(ConditionsViewModel.PREF_DEMO_MODE, ConditionsViewModel.DEFAULT_DEMO_MODE)
         binding.tvDemoModeBanner.visibility = if (demoMode) View.VISIBLE else View.GONE
 
-        // Camera hero — default to Delray, otherwise the first available appearance
-        val appearance = data.waterAppearance.find { it.cameraId == "delray" }
-            ?: data.waterAppearance.firstOrNull()
-        val health = data.cameras.find { it.cameraId == appearance?.cameraId }
-            ?: data.cameras.firstOrNull()
+        val selectedLocation = locationSelection.selected
+        val appearance = data.waterAppearance.firstOrNull { it.cameraId in selectedLocation.cameraIds }
+        val health = data.cameras.firstOrNull { it.cameraId in selectedLocation.cameraIds }
 
         selectedCameraId = appearance?.cameraId ?: health?.cameraId
 
@@ -110,11 +134,17 @@ class HomeFragment : Fragment() {
         binding.tvHeroHeadline.text = when {
             framingOk && !appearance?.headline.isNullOrBlank() -> appearance?.headline
             health != null -> getString(R.string.camera_visual_review)
-            else -> getString(R.string.na)
+            selectedLocation.viewOnly -> "View-only camera"
+            else -> "Imagery unavailable"
         }
-        binding.tvHeroCamera.text = appearance?.location
-            ?: health?.location
-            ?: getString(R.string.na)
+        binding.tvHeroCamera.text = selectedLocation.name
+        if (appearance == null && health == null) {
+            binding.btnSeeEvidence.text = "Open live camera"
+            binding.btnSeeEvidence.setOnClickListener { openUrl(selectedLocation.cameraUrl) }
+        } else {
+            binding.btnSeeEvidence.text = getString(R.string.see_evidence)
+            binding.btnSeeEvidence.setOnClickListener { openEvidenceSheet() }
+        }
 
         val observed = SnorkelFormat.time(health?.observedAt ?: appearance?.observedAt)
         val age = health?.ageMinutes
@@ -127,47 +157,26 @@ class HomeFragment : Fragment() {
         }
         binding.tvHeroTime.text = "$cameraFreshness · ${SnorkelFormat.cameraTime(observed, age, provider, retrieved)}"
 
-        // Wind
-        data.weather?.wind?.let { w ->
-            val speed = w.speedMph ?: w.speedKn?.times(1.150779448)
-            val gust = w.gustMph ?: w.gustKn?.times(1.150779448)
-            val from = w.fromCompass ?: getString(R.string.na)
-            val toward = w.towardCompass ?: getString(R.string.na)
-            binding.tvWindHeadline.text = if (speed != null) "%.1f mph".format(speed) else getString(R.string.na)
-            binding.tvWindGusts.text = "From $from · toward $toward"
-            binding.tvWindLabel.text = buildString {
-                if (gust != null) {
-                    val period = w.gustPeriod?.let { " · $it" } ?: ""
-                    append("Gusts %.1f mph$period".format(gust))
-                }
-                SnorkelFormat.time(w.timeUtc)?.let {
-                    if (isNotEmpty()) append("\n")
-                    append("${if (data.mode == "recorded_replay") "Recorded" else "Updated"} · $it")
-                }
-            }.ifBlank { getString(R.string.na) }
-        } ?: run {
-            binding.tvWindHeadline.text = getString(R.string.na)
-            binding.tvWindGusts.text = getString(R.string.na)
-            binding.tvWindLabel.text = getString(R.string.na)
+        val localWeather = data.weather.takeIf {
+            kotlin.math.abs(data.location.lat - selectedLocation.lat) < .08 &&
+                kotlin.math.abs(data.location.lon - selectedLocation.lon) < .08
         }
 
-        // Rain
-        data.weather?.let { w ->
-            val recent = w.recent24h.mm
-            val forward = w.forward24h.mm
-            binding.tvRainRecent.text = if (recent != null) "%.1f mm".format(recent) else getString(R.string.na)
-            binding.tvRainPeriod.text = getString(R.string.rain_previous)
-            binding.tvRainForward.text = buildString {
-                append(if (forward != null) "${getString(R.string.rain_next)} · %.1f mm".format(forward) else getString(R.string.na))
-                val start = SnorkelFormat.time(w.recent24h.startUtc)
-                val end = SnorkelFormat.time(w.recent24h.endUtc)
-                if (start != null || end != null) append("\n${if (data.mode == "recorded_replay") "Recorded" else "Updated"} · ${start ?: "?"}–${end ?: "?"}")
-            }
-        } ?: run {
-            binding.tvRainRecent.text = getString(R.string.na)
-            binding.tvRainPeriod.text = getString(R.string.rain_previous)
-            binding.tvRainForward.text = getString(R.string.na)
+        val liveWeather = weatherState.takeIf { !demoMode && it.locationId == selectedLocation.id }
+        val speed = if (demoMode) localWeather?.wind?.speedMph else liveWeather?.windMph
+        val direction = if (demoMode) localWeather?.wind?.fromCompass else compass(liveWeather?.windFromDegrees)
+        binding.tvWindHeadline.text = speed?.let { "%.1f mph".format(it) } ?: weatherLabel(liveWeather)
+        binding.tvWindGusts.text = direction?.let { "From $it" } ?: getString(R.string.na)
+        binding.tvWindLabel.text = if (demoMode) {
+            localWeather?.wind?.timeUtc?.let { "Recorded · ${SnorkelFormat.time(it)}" } ?: getString(R.string.na)
+        } else {
+            "${liveWeather?.status?.replaceFirstChar { it.uppercase() } ?: "Unavailable"} · ${liveWeather?.source ?: "Open-Meteo"}${liveWeather?.observedAt?.let { " · $it" } ?: ""}"
         }
+
+        val recent = if (demoMode) localWeather?.recent24h?.inches ?: localWeather?.recent24h?.mm?.div(25.4) else liveWeather?.rain24hInches
+        binding.tvRainRecent.text = recent?.let { "%.2f in".format(it) } ?: weatherLabel(liveWeather)
+        binding.tvRainPeriod.text = getString(R.string.rain_previous)
+        binding.tvRainForward.text = if (demoMode) "Recorded local window" else "${liveWeather?.status?.replaceFirstChar { it.uppercase() } ?: "Unavailable"} · location-specific"
 
         // Algae
         fun setLinkButton(btn: android.view.View, url: String?) {
@@ -194,7 +203,8 @@ class HomeFragment : Fragment() {
             val chartVisible = !a.sourceImageUrl.isNullOrBlank()
             val sourceVisible = !a.sourceUrl.isNullOrBlank()
             val legendVisible = !a.sourceLegendUrl.isNullOrBlank()
-            setLinkButton(binding.btnViewUsfChart, a.sourceImageUrl)
+            binding.btnViewUsfChart.visibility = View.VISIBLE
+            binding.btnViewUsfChart.setOnClickListener { findNavController().navigate(R.id.action_home_to_sargassum_chart) }
             setLinkButton(binding.btnViewUsfSource, a.sourceUrl)
             setLinkButton(binding.btnViewUsfLegend, a.sourceLegendUrl)
             binding.tvUsfDot1.visibility =
@@ -210,9 +220,8 @@ class HomeFragment : Fragment() {
         }
 
         // Surface flow (experimental)
-        val m = data.surfaceMotion
-        val delrayHealth = data.cameras.find { it.cameraId == "delray" }
-        val fallbackCameraUrl = delrayHealth?.pageUrl ?: appearance?.sourceUrl
+        val m = data.surfaceMotion.takeIf { selectedLocation.motionSupported }
+        val fallbackCameraUrl = health?.pageUrl ?: appearance?.sourceUrl
         val actionUrl = m?.clipUrl ?: m?.regionsImageUrl ?: fallbackCameraUrl
         val isActionable = !actionUrl.isNullOrBlank()
 
@@ -235,7 +244,7 @@ class HomeFragment : Fragment() {
             else -> Triple(getString(R.string.surface_flow_unavailable), m.reason ?: m.interpretation, R.drawable.ic_direction_none)
         }
 
-        binding.tvSurfaceFlowTitle.text = "Surface flow · ${m?.location ?: "Delray Beach"}"
+        binding.tvSurfaceFlowTitle.text = "Surface flow · ${selectedLocation.name}"
         binding.tvSurfaceFlowStatus.text = headline
         binding.tvSurfaceFlowSupport.text = support
         binding.tvSurfaceFlowSupport.visibility =
@@ -265,7 +274,7 @@ class HomeFragment : Fragment() {
             binding.cardSurfaceFlow.isClickable = true
             binding.cardSurfaceFlow.isFocusable = true
             binding.ivSurfaceFlowChevron.visibility = View.VISIBLE
-            binding.cardSurfaceFlow.setOnClickListener { openEvidenceSheet("delray") }
+            binding.cardSurfaceFlow.setOnClickListener { openEvidenceSheet(selectedCameraId) }
             binding.cardSurfaceFlow.contentDescription = getString(R.string.view_surface_flow_evidence)
         } else {
             binding.cardSurfaceFlow.isClickable = false
@@ -277,6 +286,18 @@ class HomeFragment : Fragment() {
 
         // C-16
         binding.tvC16Notes.text = data.c16?.notes ?: getString(R.string.na)
+    }
+
+    private fun compass(degrees: Double?): String? {
+        if (degrees == null) return null
+        val points = listOf("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+        return points[((degrees + 22.5) / 45.0).toInt() % points.size]
+    }
+
+    private fun weatherLabel(weather: LocationWeatherState?) = when (weather?.status) {
+        "checking" -> "Checking"
+        "cached" -> "Cached"
+        else -> getString(R.string.na)
     }
 
     private fun openEvidenceSheet(cameraId: String? = selectedCameraId) {
@@ -293,6 +314,11 @@ class HomeFragment : Fragment() {
         openUrl(url)
     }
 
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.load()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
