@@ -45,6 +45,12 @@ class MapFragment : Fragment() {
         binding.mapPreview.markers = locations.map { MapPreviewView.Marker(it.id, shortLabel(it), it.municipality, it.lat, it.lon) }
         binding.mapPreview.selectedId = selected.id
         binding.mapPreview.onMarkerSelected = { id -> selectLocation(locations.first { it.id == id }) }
+        val toggleText = ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()), intArrayOf(Color.WHITE, Color.parseColor("#005E66")))
+        val toggleBackground = ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()), intArrayOf(Color.parseColor("#006A70"), Color.WHITE))
+        binding.btnMapMode.setTextColor(toggleText)
+        binding.btnCameraMode.setTextColor(toggleText)
+        binding.btnMapMode.backgroundTintList = toggleBackground
+        binding.btnCameraMode.backgroundTintList = toggleBackground
         binding.btnCameraMode.setOnClickListener { findNavController().navigate(R.id.action_map_to_home) }
         binding.btnExpand.setOnClickListener { toggleDetails() }
         binding.btnDetails.setOnClickListener { toggleDetails() }
@@ -52,9 +58,9 @@ class MapFragment : Fragment() {
         binding.btnZoomIn.setOnClickListener { binding.mapPreview.zoomBy(1.35f) }
         binding.btnZoomOut.setOnClickListener { binding.mapPreview.zoomBy(.74f) }
         binding.btnShowAll.setOnClickListener { binding.mapPreview.showAll() }
-        binding.btnRecenter.setOnClickListener { binding.mapPreview.centerOn(selected.id) }
+        binding.btnRecenter.setOnClickListener { centerSelected() }
         binding.btnScenarioMenu.setOnClickListener { showScenarioMenu(it) }
-        binding.mapPreview.post { binding.mapPreview.centerOn(selected.id) }
+        binding.mapPreview.post { centerSelected() }
         render()
     }
 
@@ -63,14 +69,18 @@ class MapFragment : Fragment() {
         scenario = if (location.viewOnly) Scenario.VIEW_ONLY else Scenario.GOOD
         expanded = false
         binding.mapPreview.selectedId = location.id
-        binding.mapPreview.post { binding.mapPreview.centerOn(location.id) }
         render()
+        binding.mapPreview.post { centerSelected() }
     }
 
     private fun toggleDetails() {
         expanded = !expanded
         render()
-        binding.mapPreview.post { binding.mapPreview.centerOn(selected.id) }
+        binding.mapPreview.post { centerSelected() }
+    }
+
+    private fun centerSelected() {
+        binding.mapPreview.centerOn(selected.id, binding.cardConditions.top)
     }
 
     private fun showScenarioMenu(anchor: View) {
@@ -86,8 +96,8 @@ class MapFragment : Fragment() {
                 }
                 expanded = false
                 binding.mapPreview.selectedId = selected.id
-                binding.mapPreview.post { binding.mapPreview.centerOn(selected.id) }
                 render()
+                binding.mapPreview.post { centerSelected() }
                 true
             }
             show()

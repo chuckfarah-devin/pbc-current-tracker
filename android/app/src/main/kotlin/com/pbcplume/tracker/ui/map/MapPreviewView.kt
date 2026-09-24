@@ -1,5 +1,6 @@
 package com.pbcplume.tracker.ui.map
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -10,10 +11,14 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.view.animation.DecelerateInterpolator
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlin.math.hypot
 
 class MapPreviewView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
     data class Marker(val id: String, val label: String, val municipality: String, val lat: Double, val lon: Double)
+    private data class Shape(val layer: String, val rings: List<List<Pair<Double, Double>>>)
 
     var markers: List<Marker> = emptyList()
         set(value) { field = value; invalidate() }
@@ -21,6 +26,8 @@ class MapPreviewView @JvmOverloads constructor(context: Context, attrs: Attribut
         set(value) { field = value; invalidate() }
     var onMarkerSelected: ((String) -> Unit)? = null
 
+    private val bounds = doubleArrayOf(-80.18, 25.65, -79.96, 27.20)
+    private val shapes = loadShapes()
     private var scale = 1f
     private var offsetX = 0f
     private var offsetY = 0f
@@ -30,96 +37,115 @@ class MapPreviewView @JvmOverloads constructor(context: Context, attrs: Attribut
     private val scaleDetector = ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             scale = (scale * detector.scaleFactor).coerceIn(1f, 3.2f)
+            clampOffsets()
             invalidate()
             return true
         }
     })
 
     private val ocean = paint(Color.rgb(35, 139, 168))
-    private val shelf = paint(Color.rgb(79, 183, 181))
     private val land = paint(Color.rgb(225, 238, 223))
-    private val park = paint(Color.rgb(188, 220, 190))
-    private val waterway = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(78, 170, 181); strokeWidth = 9f; style = Paint.Style.STROKE }
-    private val majorRoad = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; strokeWidth = 5f; style = Paint.Style.STROKE }
-    private val minorRoad = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(165, 255, 255, 255); strokeWidth = 2f; style = Paint.Style.STROKE }
-    private val cityPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(52, 91, 98); textSize = 21f; isFakeBoldText = true }
-    private val oceanLabel = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(210, 255, 255, 255); textSize = 27f }
+    private val waterway = paint(Color.rgb(65, 165, 181))
     private val pin = paint(Color.rgb(0, 96, 100))
     private val selectedPin = paint(Color.rgb(255, 184, 0))
-    private val pinStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; strokeWidth = 5f; style = Paint.Style.STROKE }
+    private val pinStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; strokeWidth = 4f; style = Paint.Style.STROKE }
     private val pinCamera = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; strokeWidth = 3f; style = Paint.Style.STROKE }
-    private val markerLabel = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(11, 48, 64); textSize = 22f; isFakeBoldText = true }
+    private val markerLabel = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(11, 48, 64); textSize = 21f; isFakeBoldText = true }
+    private val attribution = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(51, 94, 105); textSize = 18f }
 
     override fun onDraw(canvas: Canvas) {
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), ocean)
         canvas.save()
-        canvas.translate(offsetX, offsetY)
-        canvas.scale(scale, scale, width * .45f, height * .45f)
+        applyTransform(canvas)
         drawGeography(canvas)
-        markers.forEach { drawMarker(canvas, it) }
+        drawMarkers(canvas)
         canvas.restore()
+        canvas.drawText("Florida shoreline + Intracoastal · FWC Open Data", 12f, height - 12f, attribution)
+    }
+
+    private fun applyTransform(canvas: Canvas) {
+        canvas.translate(offsetX, offsetY)
+        canvas.scale(scale, scale, width / 2f, height / 2f)
     }
 
     private fun drawGeography(canvas: Canvas) {
-        val coast = Path().apply {
-            moveTo(width * .58f, -100f)
-            cubicTo(width * .55f, height * .18f, width * .60f, height * .38f, width * .53f, height * .58f)
-            cubicTo(width * .49f, height * .72f, width * .57f, height * .88f, width * .50f, height + 100f)
-            lineTo(-100f, height + 100f); lineTo(-100f, -100f); close()
+        shapes.forEach { shape ->
+            val path = Path()
+            shape.rings.forEach { ring ->
+                ring.forEachIndexed { index, point ->
+                    val screen = rawPoint(point.first, point.second)
+                    if (index == 0) path.moveTo(screen.first, screen.second) else path.lineTo(screen.first, screen.second)
+                }
+                path.close()
+            }
+            path.fillType = Path.FillType.EVEN_ODD
+            canvas.drawPath(path, if (shape.layer == "intracoastal") waterway else land)
         }
-        canvas.drawPath(coast, shelf)
-        val landPath = Path().apply {
-            moveTo(width * .54f, -100f)
-            cubicTo(width * .51f, height * .18f, width * .56f, height * .38f, width * .49f, height * .58f)
-            cubicTo(width * .45f, height * .72f, width * .53f, height * .88f, width * .46f, height + 100f)
-            lineTo(-100f, height + 100f); lineTo(-100f, -100f); close()
-        }
-        canvas.drawPath(landPath, land)
-        canvas.drawRect(width * .37f, height * .03f, width * .47f, height * .10f, park)
-        canvas.drawRect(width * .38f, height * .49f, width * .49f, height * .56f, park)
-        canvas.drawRect(width * .35f, height * .70f, width * .47f, height * .76f, park)
-
-        val intracoastal = Path().apply { moveTo(width * .41f, -50f); cubicTo(width * .44f, height * .27f, width * .40f, height * .65f, width * .42f, height + 50f) }
-        canvas.drawPath(intracoastal, waterway)
-        canvas.drawLine(width * .25f, -50f, width * .25f, height + 50f, majorRoad)
-        canvas.drawLine(width * .35f, -50f, width * .35f, height + 50f, majorRoad)
-        repeat(9) { i -> canvas.drawLine(width * .08f, height * (i + 1) / 10f, width * .49f, height * (i + 1) / 10f, minorRoad) }
-        canvas.drawText("I-95", width * .22f, height * .42f, cityPaint)
-        canvas.drawText("US 1", width * .31f, height * .60f, cityPaint)
-        canvas.drawText("Intracoastal", width * .29f, height * .31f, cityPaint)
-        canvas.drawText("Atlantic Ocean", width * .67f, height * .42f, oceanLabel)
-        canvas.drawText("Jupiter", width * .08f, height * .08f, cityPaint)
-        canvas.drawText("Riviera Beach", width * .07f, height * .25f, cityPaint)
-        canvas.drawText("Boynton Beach", width * .06f, height * .49f, cityPaint)
-        canvas.drawText("Delray Beach", width * .08f, height * .59f, cityPaint)
-        canvas.drawText("Boca Raton", width * .09f, height * .70f, cityPaint)
-        canvas.drawText("Pompano Beach", width * .07f, height * .84f, cityPaint)
-        canvas.drawText("Fort Lauderdale", width * .06f, height * .94f, cityPaint)
     }
 
-    private fun drawMarker(canvas: Canvas, item: Marker) {
-        val (x, y) = rawPoint(item)
-        val chosen = item.id == selectedId
-        val body = if (chosen) selectedPin else pin
-        val path = Path().apply {
-            moveTo(x, y + 25f); cubicTo(x - 30f, y - 5f, x - 24f, y - 35f, x, y - 35f)
-            cubicTo(x + 24f, y - 35f, x + 30f, y - 5f, x, y + 25f); close()
+    private fun drawMarkers(canvas: Canvas) {
+        val occupied = mutableListOf<RectF>()
+        markers.sortedBy { it.id != selectedId }.forEach { item ->
+            val (x, y) = rawPoint(item.lon, item.lat)
+            val chosen = item.id == selectedId
+            val path = Path().apply {
+                moveTo(x, y + 22f); cubicTo(x - 27f, y - 4f, x - 22f, y - 32f, x, y - 32f)
+                cubicTo(x + 22f, y - 32f, x + 27f, y - 4f, x, y + 22f); close()
+            }
+            canvas.drawPath(path, if (chosen) selectedPin else pin)
+            if (chosen) canvas.drawPath(path, pinStroke)
+            canvas.drawRoundRect(RectF(x - 9f, y - 19f, x + 9f, y - 7f), 3f, 3f, pinCamera)
+            canvas.drawCircle(x, y - 13f, 3.5f, pinCamera)
+            val labelWidth = markerLabel.measureText(item.label)
+            val labelBounds = RectF(x + 25f, y - 27f, x + 31f + labelWidth, y + 3f)
+            if (chosen || occupied.none { RectF.intersects(it, labelBounds) }) {
+                canvas.drawText(item.label, x + 28f, y - 5f, markerLabel)
+                occupied += labelBounds
+            }
         }
-        canvas.drawPath(path, body)
-        if (chosen) canvas.drawPath(path, pinStroke)
-        canvas.drawRoundRect(RectF(x - 10f, y - 20f, x + 10f, y - 6f), 3f, 3f, pinCamera)
-        canvas.drawCircle(x, y - 13f, 4f, pinCamera)
-        canvas.drawText(item.label, x + 29f, y - 5f, markerLabel)
     }
 
-    fun zoomBy(factor: Float) { scale = (scale * factor).coerceIn(1f, 3.2f); invalidate() }
-    fun showAll() { scale = 1f; offsetX = 0f; offsetY = 0f; invalidate() }
-    fun centerOn(id: String) {
-        val target = markers.firstOrNull { it.id == id } ?: return
-        val p = rawPoint(target)
-        offsetX = width * .52f - p.first
-        offsetY = height * .42f - p.second
+    fun zoomBy(factor: Float) {
+        scale = (scale * factor).coerceIn(1f, 3.2f)
+        clampOffsets()
         invalidate()
+    }
+
+    fun showAll() {
+        scale = 1f
+        offsetX = 0f
+        offsetY = 0f
+        invalidate()
+    }
+
+    fun centerOn(id: String, usableBottom: Int = height) {
+        val target = markers.firstOrNull { it.id == id } ?: return
+        scale = scale.coerceAtLeast(1.35f)
+        val point = rawPoint(target.lon, target.lat)
+        val pivotX = width / 2f
+        val pivotY = height / 2f
+        val desiredX = width * .55f
+        val desiredY = usableBottom.coerceAtLeast((height * .35f).toInt()) * .52f
+        val endX = desiredX - (pivotX + (point.first - pivotX) * scale)
+        val endY = desiredY - (pivotY + (point.second - pivotY) * scale)
+        animateOffsets(endX, endY)
+    }
+
+    private fun animateOffsets(targetX: Float, targetY: Float) {
+        val startX = offsetX
+        val startY = offsetY
+        ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 260
+            interpolator = DecelerateInterpolator()
+            addUpdateListener {
+                val fraction = it.animatedFraction
+                offsetX = startX + (targetX - startX) * fraction
+                offsetY = startY + (targetY - startY) * fraction
+                clampOffsets()
+                invalidate()
+            }
+            start()
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -127,30 +153,66 @@ class MapPreviewView @JvmOverloads constructor(context: Context, attrs: Attribut
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> { lastX = event.x; lastY = event.y; dragging = false }
             MotionEvent.ACTION_MOVE -> if (!scaleDetector.isInProgress) {
-                val dx = event.x - lastX; val dy = event.y - lastY
+                val dx = event.x - lastX
+                val dy = event.y - lastY
                 if (hypot(dx, dy) > 3f) dragging = true
-                offsetX += dx; offsetY += dy; lastX = event.x; lastY = event.y; invalidate()
+                offsetX += dx
+                offsetY += dy
+                clampOffsets()
+                lastX = event.x
+                lastY = event.y
+                invalidate()
             }
             MotionEvent.ACTION_UP -> if (!dragging) {
-                val closest = markers.minByOrNull { val p = displayPoint(it); hypot(event.x - p.first, event.y - p.second) }
+                val closest = markers.minByOrNull { displayPoint(it).let { point -> hypot(event.x - point.first, event.y - point.second) } }
                 if (closest != null && displayPoint(closest).let { hypot(event.x - it.first, event.y - it.second) } < 75f) onMarkerSelected?.invoke(closest.id)
             }
         }
         return true
     }
 
+    private fun clampOffsets() {
+        val maxX = width * (scale - 1f) / 2f
+        val maxY = height * (scale - 1f) / 2f
+        offsetX = offsetX.coerceIn(-maxX, maxX)
+        offsetY = offsetY.coerceIn(-maxY, maxY)
+    }
+
     private fun displayPoint(marker: Marker): Pair<Float, Float> {
-        val p = rawPoint(marker)
-        val pivotX = width * .45f; val pivotY = height * .45f
-        return (pivotX + (p.first - pivotX) * scale + offsetX) to (pivotY + (p.second - pivotY) * scale + offsetY)
+        val point = rawPoint(marker.lon, marker.lat)
+        return width / 2f + (point.first - width / 2f) * scale + offsetX to height / 2f + (point.second - height / 2f) * scale + offsetY
     }
 
-    private fun rawPoint(marker: Marker): Pair<Float, Float> {
-        val minLat = 26.08; val maxLat = 26.98
-        val x = width * (.50 + ((marker.lon + 80.11) / .09) * .08).toFloat()
-        val y = height * (1.0 - (marker.lat - minLat) / (maxLat - minLat)).toFloat()
-        return x.coerceIn(width * .47f, width * .59f) to y.coerceIn(38f, height - 55f)
+    private fun rawPoint(lon: Double, lat: Double): Pair<Float, Float> {
+        val x = ((lon - bounds[0]) / (bounds[2] - bounds[0]) * width).toFloat()
+        val y = ((bounds[3] - lat) / (bounds[3] - bounds[1]) * height).toFloat()
+        return x to y
     }
 
+    private fun loadShapes(): List<Shape> = runCatching {
+        val text = context.assets.open("map/southeast_florida.geojson").bufferedReader().use { it.readText() }
+        val features = JSONObject(text).getJSONArray("features")
+        buildList {
+            for (index in 0 until features.length()) {
+                val feature = features.getJSONObject(index)
+                val layer = feature.getJSONObject("properties").getString("layer")
+                val geometry = feature.getJSONObject("geometry")
+                when (geometry.getString("type")) {
+                    "Polygon" -> add(Shape(layer, rings(geometry.getJSONArray("coordinates"))))
+                    "MultiPolygon" -> geometry.getJSONArray("coordinates").forEachArray { add(Shape(layer, rings(it))) }
+                    "LineString" -> add(Shape(layer, listOf(points(geometry.getJSONArray("coordinates")))))
+                    "MultiLineString" -> geometry.getJSONArray("coordinates").forEachArray { add(Shape(layer, listOf(points(it)))) }
+                }
+            }
+        }
+    }.getOrDefault(emptyList())
+
+    private fun rings(array: JSONArray) = buildList { array.forEachArray { add(points(it)) } }
+    private fun points(array: JSONArray) = buildList {
+        array.forEachArray { add(it.getDouble(0) to it.getDouble(1)) }
+    }
+    private inline fun JSONArray.forEachArray(block: (JSONArray) -> Unit) {
+        for (index in 0 until length()) block(getJSONArray(index))
+    }
     private fun paint(colorValue: Int) = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colorValue }
 }
