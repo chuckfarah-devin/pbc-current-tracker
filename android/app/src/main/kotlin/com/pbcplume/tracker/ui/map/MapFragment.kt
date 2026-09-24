@@ -1,12 +1,14 @@
 package com.pbcplume.tracker.ui.map
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.pbcplume.tracker.R
@@ -16,16 +18,7 @@ class MapFragment : Fragment() {
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
-    private data class Location(
-        val id: String,
-        val name: String,
-        val municipality: String,
-        val lat: Double,
-        val lon: Double,
-        val cameraUrl: String,
-        val viewOnly: Boolean = false
-    )
-
+    private data class Location(val id: String, val name: String, val municipality: String, val lat: Double, val lon: Double, val cameraUrl: String, val viewOnly: Boolean = false)
     private enum class Scenario { GOOD, FAIR, VIEW_ONLY }
 
     private val locations = listOf(
@@ -34,14 +27,14 @@ class MapFragment : Fragment() {
         Location("boynton", "Boynton Inlet", "South Lake Worth Inlet · inlet context", 26.5456, -80.0428, "https://video-monitoring.com/beachcams/boyntoninlet/"),
         Location("delray", "Delray Municipal Beach", "Delray Beach · default location", 26.4616, -80.0585, "https://live1.brownrice.com/embed/delraybeach1"),
         Location("boca", "South Beach Park", "Boca Raton", 26.3540, -80.0699, "https://video-monitoring.com/beachcams/boca/slideshow.htm?station=Main+Shot"),
-        Location("ebb", "Ebb Tide Resort", "Pompano Beach · view-only", 26.2295, -80.0899, "https://ebbtideresort.com/ebb-tide-resort-live-beach-cam/", true),
-        Location("hilton", "Hilton Beach House", "Fort Lauderdale · view-only", 26.1329, -80.1049, "https://www.fllbeachcam.com/", true),
-        Location("courtyard", "Courtyard Beach", "Fort Lauderdale · view-only", 26.1174, -80.1056, "https://seetheview.com/cam/580/fort-lauderdale-beach-live-cam", true)
+        Location("ebb", "Ebb Tide Resort", "Pompano Beach · view-only camera", 26.2295, -80.0899, "https://ebbtideresort.com/ebb-tide-resort-live-beach-cam/", true),
+        Location("hilton", "Hilton Beach House", "Fort Lauderdale · view-only camera", 26.1329, -80.1049, "https://www.fllbeachcam.com/", true),
+        Location("courtyard", "Courtyard Beach", "Fort Lauderdale · view-only camera", 26.1174, -80.1056, "https://seetheview.com/cam/580/fort-lauderdale-beach-live-cam", true)
     )
 
     private var selected = locations.first { it.id == "delray" }
     private var scenario = Scenario.GOOD
-    private var expanded = true
+    private var expanded = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
         _binding = FragmentMapBinding.inflate(inflater, container, false)
@@ -49,100 +42,126 @@ class MapFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, state: Bundle?) {
-        binding.mapPreview.markers = locations.map { MapPreviewView.Marker(it.id, shortLabel(it), it.lat, it.lon) }
+        binding.mapPreview.markers = locations.map { MapPreviewView.Marker(it.id, shortLabel(it), it.municipality, it.lat, it.lon) }
         binding.mapPreview.selectedId = selected.id
-        binding.mapPreview.onMarkerSelected = { id ->
-            selected = locations.first { it.id == id }
-            scenario = if (selected.viewOnly) Scenario.VIEW_ONLY else Scenario.GOOD
-            syncScenarioToggle()
-            render()
-        }
+        binding.mapPreview.onMarkerSelected = { id -> selectLocation(locations.first { it.id == id }) }
         binding.btnCameraMode.setOnClickListener { findNavController().navigate(R.id.action_map_to_home) }
-        binding.btnExpand.setOnClickListener { expanded = !expanded; render() }
+        binding.btnExpand.setOnClickListener { toggleDetails() }
+        binding.btnDetails.setOnClickListener { toggleDetails() }
         binding.btnOpenCamera.setOnClickListener { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(selected.cameraUrl))) }
-        binding.scenarioToggle.addOnButtonCheckedListener { _, id, checked ->
-            if (!checked) return@addOnButtonCheckedListener
-            when (id) {
-                R.id.btnGood -> { selected = locations.first { it.id == "delray" }; scenario = Scenario.GOOD }
-                R.id.btnFair -> { selected = locations.first { it.id == "delray" }; scenario = Scenario.FAIR }
-                R.id.btnBroward -> { selected = locations.first { it.id == "hilton" }; scenario = Scenario.VIEW_ONLY }
-            }
-            binding.mapPreview.selectedId = selected.id
-            render()
-        }
-        binding.btnGood.isChecked = true
+        binding.btnZoomIn.setOnClickListener { binding.mapPreview.zoomBy(1.35f) }
+        binding.btnZoomOut.setOnClickListener { binding.mapPreview.zoomBy(.74f) }
+        binding.btnShowAll.setOnClickListener { binding.mapPreview.showAll() }
+        binding.btnRecenter.setOnClickListener { binding.mapPreview.centerOn(selected.id) }
+        binding.btnScenarioMenu.setOnClickListener { showScenarioMenu(it) }
+        binding.mapPreview.post { binding.mapPreview.centerOn(selected.id) }
         render()
+    }
+
+    private fun selectLocation(location: Location) {
+        selected = location
+        scenario = if (location.viewOnly) Scenario.VIEW_ONLY else Scenario.GOOD
+        expanded = false
+        binding.mapPreview.selectedId = location.id
+        binding.mapPreview.post { binding.mapPreview.centerOn(location.id) }
+        render()
+    }
+
+    private fun toggleDetails() {
+        expanded = !expanded
+        render()
+        binding.mapPreview.post { binding.mapPreview.centerOn(selected.id) }
+    }
+
+    private fun showScenarioMenu(anchor: View) {
+        PopupMenu(requireContext(), anchor).apply {
+            menu.add("Delray · Good demo")
+            menu.add("Delray · Fair/Poor demo")
+            menu.add("Hilton · View-only demo")
+            setOnMenuItemClickListener {
+                when (it.title.toString()) {
+                    "Delray · Good demo" -> { selected = locations.first { item -> item.id == "delray" }; scenario = Scenario.GOOD }
+                    "Delray · Fair/Poor demo" -> { selected = locations.first { item -> item.id == "delray" }; scenario = Scenario.FAIR }
+                    else -> { selected = locations.first { item -> item.id == "hilton" }; scenario = Scenario.VIEW_ONLY }
+                }
+                expanded = false
+                binding.mapPreview.selectedId = selected.id
+                binding.mapPreview.post { binding.mapPreview.centerOn(selected.id) }
+                render()
+                true
+            }
+            show()
+        }
     }
 
     private fun render() = with(binding) {
         tvLocation.text = selected.name
         tvMunicipality.text = selected.municipality
-        tvScenario.text = when (scenario) {
-            Scenario.GOOD -> "SIMULATED GOOD · visual preview only"
-            Scenario.FAIR -> "SIMULATED FAIR / POOR · visual preview only"
-            Scenario.VIEW_ONLY -> "VIEW-ONLY DEMO · no local analysis"
-        }
         when (scenario) {
             Scenario.GOOD -> {
-                tvRating.text = "Good"
-                tvRating.setTextColor(Color.rgb(20, 80, 55))
-                tvRating.setBackgroundResource(R.drawable.bg_rating_good)
+                rating("Good", "#BFE8D3", "#145037")
+                tvCompactConditions.text = "W 7 mph · Rain 0.02 in · Northward"
+                tvCompactEvidence.text = "Blue-green appearance · Offshore sargassum present"
                 tvWind.text = "W 7 mph"
                 tvRain.text = "0.02 in"
                 tvMotion.text = "Northward"
                 tvAppearance.text = "Water appearance: simulated usable blue-green observation"
-                tvSargassum.text = "Sargassum present · demo source date Jul 03, 2026"
-                tvReason.text = "Demo rationale: west wind below 10 mph and little recent rain. Evidence strength remains in Details. Not a safety rating."
+                sargassum(true, "Sargassum present", "Demo composite ended Jul 03, 2026")
+                tvReason.text = "Simulated evidence: west wind below 10 mph and little recent rain. Direction evidence strength: likely. Personal preference preview only; not a safety rating."
             }
             Scenario.FAIR -> {
-                tvRating.text = "Fair"
-                tvRating.setTextColor(Color.rgb(100, 62, 0))
-                tvRating.setBackgroundColor(Color.rgb(255, 218, 134))
+                rating("Fair", "#FFDA86", "#6A4300")
+                tvCompactConditions.text = "E 14 mph · Rain 0.74 in · Southward"
+                tvCompactEvidence.text = "Mixed appearance · Offshore sargassum present"
                 tvWind.text = "E 14 mph"
                 tvRain.text = "0.74 in"
                 tvMotion.text = "Southward"
                 tvAppearance.text = "Water appearance: simulated mixed observation"
-                tvSargassum.text = "Sargassum present · demo source date Jul 03, 2026"
-                tvReason.text = "Demo rationale: recent rain and onshore wind are adverse. Fair/Poor thresholds remain proposals and are not implemented live."
+                sargassum(true, "Sargassum present", "Demo composite ended Jul 03, 2026")
+                tvReason.text = "Simulated evidence: recent rain and onshore wind. Direction evidence strength: possible. Fair/Poor thresholds remain proposals."
             }
             Scenario.VIEW_ONLY -> {
-                tvRating.text = "Not rated"
-                tvRating.setTextColor(Color.rgb(70, 90, 100))
-                tvRating.setBackgroundColor(Color.rgb(228, 240, 243))
-                tvWind.text = "Unavailable"
-                tvRain.text = "Unavailable"
+                rating("Not rated", "#E4F0F3", "#405B66")
+                tvCompactConditions.text = "SE 9 mph · Rain 0.08 in · Surface unavailable"
+                tvCompactEvidence.text = "Camera view-only · analysis unavailable"
+                tvWind.text = "SE 9 mph"
+                tvRain.text = "0.08 in"
                 tvMotion.text = "Unavailable"
-                tvAppearance.text = "No bundled local imagery · open the provider camera when online"
-                tvSargassum.text = "Offshore sargassum · no local demo observation"
-                tvReason.text = "This PTZ camera is view-only. Missing analysis remains explicit; no Delray conditions or imagery are substituted."
+                tvAppearance.text = "Camera analysis unavailable · no bundled local imagery"
+                sargassum(false, "Offshore sargassum unavailable", "No local demo observation")
+                tvReason.text = "Weather is shown independently for this demo. The PTZ camera remains view-only; no Delray imagery or analysis is substituted."
             }
         }
         groupDetails.visibility = if (expanded) View.VISIBLE else View.GONE
         btnExpand.rotation = if (expanded) 180f else 0f
+        btnDetails.text = if (expanded) "Hide details" else "Details"
         mapPreview.selectedId = selected.id
     }
 
-    private fun syncScenarioToggle() {
-        when (scenario) {
-            Scenario.GOOD -> binding.btnGood.isChecked = true
-            Scenario.FAIR -> binding.btnFair.isChecked = true
-            Scenario.VIEW_ONLY -> binding.btnBroward.isChecked = true
-        }
+    private fun rating(text: String, background: String, foreground: String) {
+        binding.tvRating.text = text
+        binding.tvRating.setTextColor(Color.parseColor(foreground))
+        binding.tvRating.backgroundTintList = ColorStateList.valueOf(Color.parseColor(background))
+    }
+
+    private fun sargassum(present: Boolean, headline: String, date: String) {
+        val color = Color.parseColor(if (present) "#C62828" else "#607780")
+        binding.tvSargassum.text = headline
+        binding.tvSargassum.setTextColor(color)
+        binding.ivSargassum.imageTintList = ColorStateList.valueOf(color)
+        binding.tvSargassumDate.text = date
     }
 
     private fun shortLabel(location: Location) = when (location.id) {
-        "jupiter" -> "Jupiter"
-        "singer" -> "Singer"
-        "boynton" -> "Boynton"
+        "jupiter" -> "Jupiter Beach"
+        "singer" -> "Singer Island"
+        "boynton" -> "Boynton Inlet"
         "delray" -> "Delray"
-        "boca" -> "Boca"
-        "ebb" -> "Pompano"
-        "hilton" -> "Hilton FLL"
+        "boca" -> "South Beach Park"
+        "ebb" -> "Ebb Tide"
+        "hilton" -> "Hilton"
         else -> "Courtyard"
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 }
