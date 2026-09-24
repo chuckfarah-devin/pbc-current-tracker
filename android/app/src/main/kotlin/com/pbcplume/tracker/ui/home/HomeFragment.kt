@@ -43,6 +43,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnRefresh.setOnClickListener { viewModel.refresh() }
+        binding.btnMap.setOnClickListener { findNavController().navigate(R.id.action_home_to_map) }
         binding.btnSeeEvidence.setOnClickListener { openEvidenceSheet() }
         binding.btnOpenSfwmd.setOnClickListener { openSfwmd() }
         binding.btnSettings.setOnClickListener { findNavController().navigate(R.id.action_home_to_settings) }
