@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#06283E"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Offshore sargassum chart"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvChartMetadata"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#C3D7DF"
+        android:textSize="12sp" />
+
+    <com.pbcplume.tracker.ui.sargassum.ZoomImageView
+        android:id="@+id/chartImage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:background="#00125D"
+        android:contentDescription="Full-resolution USF offshore sargassum chart"
+        android:filter="false" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnRegionalView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Reset regional view" />
+
+        <Button
+            android:id="@+id/btnFullChart"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Full chart" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/legendImage"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="USF sargassum surface coverage color legend"
+        android:scaleType="fitCenter"
+        android:filter="false" />
+
+    <TextView
+        android:id="@+id/tvMarkerStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Selected beach marker"
+        android:textColor="#FFDA86"
+        android:textSize="12sp" />
+</LinearLayout>

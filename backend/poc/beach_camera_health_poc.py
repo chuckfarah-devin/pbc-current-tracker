@@ -32,7 +32,9 @@ SITES = {
  'lake_worth': {'name':'Lake Worth Inlet','url':'https://video-monitoring.com/beachcams/lakeworthinlet/',
                 'views':{'s4':'North shore','s6':'North shore zoom','s8':'Inlet shot','s12':'Inlet zoom','s16':'North east view'}}}
 DELRAY='https://streamer5.brownrice.com/delraybeach1/delraybeach1.stream/main_playlist.m3u8'
-ALLOWED={'video-monitoring.com','streamer5.brownrice.com'}
+DELRAY_PAGE='https://www.delraybeachfl.gov/government/city-departments/parks-and-recreation/beach'
+DELRAY_SNAPSHOT='https://player.brownrice.com/snapshot/delraybeach1'
+ALLOWED={'video-monitoring.com','streamer5.brownrice.com','player.brownrice.com'}
 
 
 def utcnow(): return datetime.now(timezone.utc)
@@ -148,8 +150,8 @@ def decode_segment(segment, target):
 
 
 def delray(output,previous,delay):
-    result={'id':'delray','location':'Delray Beach','view':'Stream from existing plume POC',
-            'page_url':DELRAY,'checked_at':utcnow().isoformat(),'freshness':'unknown',
+    result={'id':'delray','location':'Delray Beach','view':'Delray Municipal Beach',
+            'page_url':DELRAY_PAGE,'checked_at':utcnow().isoformat(),'freshness':'unknown',
             'capture_utc':None,'capture_time_basis':'Not verified; HLS delivery progression is not a capture timestamp'}
     try:
         first=playlist(DELRAY); time.sleep(delay); second=playlist(DELRAY)
@@ -177,7 +179,16 @@ def delray(output,previous,delay):
                       segment_count=len(selected),retrieved_at=utcnow().isoformat())
         result.update(inspect_frame(target.read_bytes(),target,previous.get('delray')))
         result['status']='stream_advancing_capture_unverified'; result['local_conditions_verified']=False
-    except Exception as exc: result.update(status='unavailable',error=str(exc),acquisition_id=None)
+    except Exception as exc:
+        try:
+            raw=get(DELRAY_SNAPSHOT).content
+            target=output/'delray.png'
+            result.update(inspect_frame(raw,target,previous.get('delray')))
+            result.update(status='snapshot_current_capture_unverified',error='',acquisition_id=hashlib.sha256(raw).hexdigest(),
+                          image_url=DELRAY_SNAPSHOT,retrieved_at=utcnow().isoformat(),local_conditions_verified=False,
+                          limitations=[f'HLS health check unavailable: {exc}', 'Snapshot retrieval time is not camera capture time.'])
+        except Exception as snapshot_exc:
+            result.update(status='unavailable',error=f'HLS: {exc}; snapshot: {snapshot_exc}',acquisition_id=None)
     return [result]
 
 

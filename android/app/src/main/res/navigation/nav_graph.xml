@@ -11,6 +11,8 @@
             app:destination="@id/settingsFragment" />
         <action android:id="@+id/action_home_to_map"
             app:destination="@id/mapFragment" />
+        <action android:id="@+id/action_home_to_sargassum_chart"
+            app:destination="@id/sargassumChartFragment" />
     </fragment>
 
     <fragment android:id="@+id/mapFragment"
@@ -25,6 +27,10 @@
         <action android:id="@+id/action_map_to_debug"
             app:destination="@id/debugFragment" />
     </fragment>
+
+    <fragment android:id="@+id/sargassumChartFragment"
+        android:name="com.pbcplume.tracker.ui.sargassum.SargassumChartFragment"
+        android:label="Offshore sargassum chart" />
 
     <fragment android:id="@+id/settingsFragment"
         android:name="com.pbcplume.tracker.ui.settings.SettingsFragment"
