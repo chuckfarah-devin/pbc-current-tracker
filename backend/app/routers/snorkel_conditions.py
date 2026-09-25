@@ -100,7 +100,7 @@ def _parse_camera(
     if image_file and (source_dir / "camera" / image_file).exists():
         image_url = f"{base}/{image_prefix}/camera/{image_file}"
 
-    limitations = []
+    limitations = list(cam.get("limitations", []))
     if cam.get("visual_review"):
         limitations.append(cam["visual_review"])
     if cam.get("capture_time_basis"):

@@ -21,7 +21,7 @@ object BeachLocations {
         BeachLocation("jupiter", "Jupiter Beach", "Jupiter", 26.9400, -80.0700, "https://video-monitoring.com/beachcams/jupiter/", setOf("jupiter")),
         BeachLocation("singer", "Singer Island Beach", "Riviera Beach", 26.7910, -80.0335, "https://www.thesingerresort.com/live-webcam/", setOf("singer"), true),
         BeachLocation("boynton", "Boynton Inlet", "South Lake Worth Inlet", 26.5456, -80.0428, "https://video-monitoring.com/beachcams/boyntoninlet/", setOf("boynton_s4", "boynton_s6", "boynton_s8", "boynton_s10")),
-        BeachLocation("delray", "Delray Municipal Beach", "Delray Beach", 26.4616, -80.0585, "https://live1.brownrice.com/embed/delraybeach1", setOf("delray"), motionSupported = true),
+        BeachLocation("delray", "Delray Municipal Beach", "Delray Beach", 26.4616, -80.0585, "https://www.delraybeachfl.gov/government/city-departments/parks-and-recreation/beach", setOf("delray"), motionSupported = true),
         BeachLocation("boca", "South Beach Park", "Boca Raton", 26.3540, -80.0699, "https://video-monitoring.com/beachcams/boca/slideshow.htm?station=Main+Shot", setOf("boca", "boca_south_beach")),
         BeachLocation("ebb", "Ebb Tide Resort", "Pompano Beach", 26.2295, -80.0899, "https://ebbtideresort.com/ebb-tide-resort-live-beach-cam/", setOf("ebb", "ebb_tide"), true),
         BeachLocation("hilton", "Hilton Beach House", "Fort Lauderdale", 26.1329, -80.1049, "https://www.fllbeachcam.com/", setOf("hilton"), true),

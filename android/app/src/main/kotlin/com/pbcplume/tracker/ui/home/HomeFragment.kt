@@ -133,12 +133,14 @@ class HomeFragment : Fragment() {
         }
         binding.tvHeroHeadline.text = when {
             framingOk && !appearance?.headline.isNullOrBlank() -> appearance?.headline
+            health?.status == "unavailable" -> "In-app preview unavailable · open provider"
             health != null -> getString(R.string.camera_visual_review)
             selectedLocation.viewOnly -> "View-only camera"
             else -> "Imagery unavailable"
         }
         binding.tvHeroCamera.text = selectedLocation.name
-        if (appearance == null && health == null) {
+        val evidenceAvailable = appearance != null || (health != null && health.status != "unavailable")
+        if (!evidenceAvailable) {
             binding.btnSeeEvidence.text = "Open live camera"
             binding.btnSeeEvidence.setOnClickListener { openUrl(selectedLocation.cameraUrl) }
         } else {
