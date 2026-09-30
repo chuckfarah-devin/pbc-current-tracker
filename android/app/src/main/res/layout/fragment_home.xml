@@ -25,7 +25,7 @@
             <ImageView
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/ic_app_logo"
+                android:src="@drawable/ic_pbc_snorkel_approved"
                 android:contentDescription="@string/title_home"
                 app:tint="@color/snorkel_icon" />
 
@@ -200,7 +200,7 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_wave"
+                        android:src="@drawable/ic_water_approved"
                         android:contentDescription="@null"
                         app:tint="@color/snorkel_icon" />
 
@@ -303,7 +303,7 @@
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/ic_wind"
+                        android:src="@drawable/ic_wind_approved"
                         android:contentDescription="@null" />
 
                     <TextView
@@ -410,7 +410,7 @@
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/ic_seaweed"
+                        android:src="@drawable/ic_sargassum_approved"
                         android:contentDescription="@null" />
 
                     <TextView

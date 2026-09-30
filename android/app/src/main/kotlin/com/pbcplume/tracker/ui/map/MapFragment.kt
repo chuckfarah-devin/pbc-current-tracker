@@ -259,7 +259,6 @@ class MapFragment : Fragment() {
         val color = Color.parseColor(if (present) "#C62828" else "#607780")
         binding.tvSargassum.text = headline
         binding.tvSargassum.setTextColor(color)
-        binding.ivSargassum.imageTintList = ColorStateList.valueOf(color)
         binding.tvSargassumDate.text = date
     }
 
